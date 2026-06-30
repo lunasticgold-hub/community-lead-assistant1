@@ -1,0 +1,109 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Community Lead Assistant Preview</title>
+  <link rel="stylesheet" href="popup/popup.css">
+  <style>
+    body { width: 100%; min-height: 100vh; display: grid; place-items: start center; padding: 24px; }
+    main { width: 460px; }
+    .previewNote { color: #9ba7ba; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+<main>
+  <p class="previewNote">Visual preview only. The real popup uses Chrome extension APIs after loading the extension.</p>
+  <header>
+    <div>
+      <h1>Community Lead Assistant v7</h1>
+      <p>Ready on Reddit community</p>
+    </div>
+    <span id="dot" class="run"></span>
+  </header>
+
+  <section class="stats">
+    <div><b>Running</b><small>Status</small></div>
+    <div><b>128</b><small>Scanned</small></div>
+    <div><b>17</b><small>Leads</small></div>
+    <div><b>4</b><small>Drafts</small></div>
+    <div><b>2</b><small>Exports</small></div>
+  </section>
+
+  <section class="card">
+    <h2>Controls</h2>
+    <select>
+      <option>Review Mode</option>
+      <option>Scan Only Mode</option>
+      <option>Research Mode</option>
+    </select>
+    <div class="actions">
+      <button>Start</button>
+      <button class="danger">Stop</button>
+      <button>Scan visible</button>
+      <button class="muted">Scan Only</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Pacing & Schedule</h2>
+    <div class="grid2">
+      <label>Min seconds<input value="30"></label>
+      <label>Max seconds<input value="40"></label>
+      <label>Item delay ms<input value="350"></label>
+      <label>Pause after leads<input value="25"></label>
+    </div>
+    <label>Run until<input type="datetime-local"></label>
+    <button>Save run settings</button>
+    <p class="hint">Pacing is for UX/load control while reading visible content. It is not message automation.</p>
+  </section>
+
+  <section class="card">
+    <h2>Qualification</h2>
+    <div class="grid2">
+      <label>Minimum score<input value="25"></label>
+      <label class="checkLine"><input type="checkbox" checked> Freelance remote preset</label>
+    </div>
+    <label>Keyword signals<textarea rows="4">need lead generation
+looking for SDRs
+cold email
+B2B sales</textarea></label>
+  </section>
+
+  <section class="card">
+    <h2>Knowledge Base</h2>
+    <label>My service<input value="B2B lead generation and outbound sales support"></label>
+    <label>Offer<textarea rows="3">A practical lead generation setup that helps book qualified sales conversations.</textarea></label>
+    <button>Save knowledge base</button>
+  </section>
+
+  <section class="card">
+    <h2>Lead Queue</h2>
+    <div class="item">
+      <div class="itemTop">
+        <b>founder_user</b>
+        <span class="tier hot">Hot 88</span>
+      </div>
+      <small>Reddit / startups</small>
+      <p>Need help getting customers for our B2B SaaS. Looking for SDR/outbound ideas this week.</p>
+      <p>Signals: need help, looking for, b2b, startup, outbound, this week</p>
+      <textarea class="draftPreview" readonly rows="4">Hi founder_user, saw your post in startups about need help, outbound.
+
+I help with B2B lead generation and outbound sales support. Open to a quick chat?</textarea>
+      <div class="actions">
+        <a href="#">View source</a>
+        <button>Open outreach</button>
+        <button>Copy opener</button>
+        <button>Log contacted</button>
+      </div>
+      <div class="leadTools">
+        <select><option>New</option><option>Reviewed</option><option>Contacted Manually</option></select>
+        <input type="date">
+        <textarea rows="2" placeholder="Notes">Good ICP. Follow up in 2 days.</textarea>
+        <button class="muted">Save lead</button>
+      </div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

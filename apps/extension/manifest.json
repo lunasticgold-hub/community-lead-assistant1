@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "Community Lead Assistant",
+  "version": "1.0.0",
+  "description": "Find high-intent community leads, generate manual outreach drafts, and sync to your dashboard.",
+  "permissions": ["storage", "tabs", "activeTab", "scripting", "downloads", "clipboardWrite"],
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "https://*.vercel.app/*",
+    "https://www.reddit.com/*",
+    "https://reddit.com/*",
+    "https://old.reddit.com/*",
+    "https://new.reddit.com/*",
+    "https://www.indiehackers.com/*",
+    "https://indiehackers.com/*",
+    "https://www.facebook.com/*",
+    "https://m.facebook.com/*",
+    "https://*.slack.com/*",
+    "https://discord.com/*",
+    "https://*.discord.com/*",
+    "https://web.telegram.org/*",
+    "https://web.whatsapp.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Community Lead Assistant",
+    "default_popup": "popup/popup.html"
+  }
+}

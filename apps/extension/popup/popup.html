@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Community Lead Assistant</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main>
+    <header>
+      <div class="brand">
+        <div class="logo"><span></span></div>
+        <div>
+          <h1>Community Lead</h1>
+          <p id="workspaceName">Local workspace</p>
+        </div>
+      </div>
+      <span id="syncPill" class="pill muted">Offline</span>
+    </header>
+
+    <section id="loggedOut" class="panel hidden">
+      <h2>Find high-intent community leads</h2>
+      <p>Paste your dashboard extension token to sync campaigns, templates, and leads.</p>
+      <input id="apiBaseUrl" placeholder="http://localhost:3000">
+      <input id="token" placeholder="Extension token">
+      <button id="loginBtn">Log in</button>
+      <button id="openDashboardLoggedOut" class="secondary">Open dashboard</button>
+    </section>
+
+    <section id="unsupported" class="panel hidden">
+      <h2>Open a supported community page</h2>
+      <p>Supported: Reddit, Indie Hackers, Facebook Groups, Slack Web, Discord Web, Telegram Web, WhatsApp Web.</p>
+      <button id="openDashboardUnsupported" class="secondary">Open dashboard</button>
+    </section>
+
+    <section id="app" class="hidden">
+      <section class="platform-card">
+        <div>
+          <span id="platformName" class="eyebrow">Detecting platform</span>
+          <h2 id="communityName">Open a community</h2>
+          <p id="campaignName">No active campaign</p>
+        </div>
+        <span id="modePill" class="pill">Review</span>
+      </section>
+
+      <section class="panel">
+        <div class="segmented">
+          <button id="reviewMode" class="active">Review Leads</button>
+          <button id="scanOnlyMode">Scan Only</button>
+        </div>
+        <div class="actions">
+          <button id="startBtn">Start Scan</button>
+          <button id="scanVisibleBtn" class="secondary">Scan Visible</button>
+          <button id="stopBtn" class="danger">Stop</button>
+        </div>
+      </section>
+
+      <section class="progress-card">
+        <div class="row">
+          <span id="runStatus" class="pill muted">Idle</span>
+          <span id="activity">Waiting</span>
+        </div>
+        <div class="bar"><div id="progressBar"></div></div>
+        <div class="stats">
+          <div><b id="scanned">0</b><span>scanned</span></div>
+          <div><b id="leadsFound">0</b><span>leads</span></div>
+          <div><b id="hotLeads">0</b><span>hot</span></div>
+          <div><b id="savedToday">0</b><span>saved</span></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <h2>Recent leads</h2>
+          <button id="syncBtn" class="link">Sync now</button>
+        </div>
+        <div id="leadList" class="lead-list"></div>
+      </section>
+    </section>
+
+    <footer>
+      <button id="openDashboard" class="link">Dashboard</button>
+      <button id="openSettings" class="link">Settings</button>
+      <button id="exportCsv" class="link">Export CSV</button>
+    </footer>
+  </main>
+
+  <div id="drawer" class="drawer hidden">
+    <div class="drawer-card">
+      <button id="closeDrawer" class="close">x</button>
+      <h2 id="drawerAuthor">Lead</h2>
+      <p id="drawerMeta"></p>
+      <div id="drawerSnippet" class="snippet"></div>
+      <h3>Manual outreach draft</h3>
+      <pre id="drawerDraft"></pre>
+      <div class="actions">
+        <button id="copyDrawer">Copy opener</button>
+        <button id="sourceDrawer" class="secondary">Open source</button>
+        <button id="outreachDrawer" class="secondary">Open manual outreach</button>
+        <button id="contactedDrawer" class="secondary">Mark contacted</button>
+      </div>
+      <p class="safe-note">Review before sending. This extension never sends messages automatically.</p>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="popup.js"></script>
+</body>
+</html>
