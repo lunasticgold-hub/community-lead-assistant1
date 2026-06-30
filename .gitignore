@@ -13,7 +13,9 @@ build/
 dev-server.log
 *.log
 
-community-lead-assistant-extension.zip
+/community-lead-assistant-extension.zip
+/community-lead-assistant-extension-unzipped/
+!apps/web/public/downloads/community-lead-assistant-extension.zip
 
 .DS_Store
 Thumbs.db
