@@ -17,6 +17,7 @@ dev-server.log
 /community-lead-assistant-extension-unzipped/
 /community-lead-assistant-complete-repository.zip
 /community-lead-assistant-complete-repository-unzipped/
+/community-lead-assistant-auth-updated/
 !apps/web/public/downloads/community-lead-assistant-extension.zip
 
 .DS_Store
