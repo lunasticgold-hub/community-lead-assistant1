@@ -41,7 +41,12 @@ export function AppShell({ title, children }: { title: string; children: React.R
               <h1 className="text-xl font-semibold">{title}</h1>
               <p className="text-sm text-slate-500">Find, qualify, draft, and follow up without auto-sending.</p>
             </div>
-            <div className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 ring-1 ring-emerald-200">Synced</div>
+            <div className="flex items-center gap-3">
+              <div className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 ring-1 ring-emerald-200">Synced</div>
+              <form action="/auth/logout" method="post">
+                <button className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-200">Logout</button>
+              </form>
+            </div>
           </div>
         </header>
         <div className="p-6">{children}</div>

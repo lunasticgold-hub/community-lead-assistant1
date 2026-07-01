@@ -30,7 +30,7 @@ export default function LandingPage() {
             <div className="mb-5 flex items-center justify-between">
               <div>
                 <div className="text-sm text-slate-300">Acme Growth Studio</div>
-                <div className="text-2xl font-semibold">Today's lead flow</div>
+                <div className="text-2xl font-semibold">Today&apos;s lead flow</div>
               </div>
               <Sparkles className="text-sky-300" />
             </div>
