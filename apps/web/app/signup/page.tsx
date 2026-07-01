@@ -72,6 +72,7 @@ export default function SignupPage() {
       if (signupError) throw signupError;
 
       if (data.session) {
+        await fetch("/api/auth/provision", { method: "POST" });
         router.push("/onboarding");
         router.refresh();
         return;

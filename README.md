@@ -78,6 +78,7 @@ Important keys:
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_SITE_DOMAIN=communityleadassistant.com
 NEXT_PUBLIC_SUPPORT_EMAIL=support@communityleadassistant.com
+NEXT_PUBLIC_EXTENSION_ID=
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
@@ -97,10 +98,11 @@ TRIAL_DAYS=7
 TRIAL_LEAD_LIMIT=50
 TRIAL_AI_DRAFT_LIMIT=50
 MAX_KNOWLEDGE_FILE_MB=10
+ALLOWED_KNOWLEDGE_FILE_TYPES=pdf,docx,txt
 DATA_RETENTION_DAYS=90
 ```
 
-Without Supabase env vars, the web app runs with demo data.
+Without Supabase env vars, authenticated pages and auth flows will return a clear configuration error.
 
 ## Supabase Setup
 
@@ -163,13 +165,9 @@ http://localhost:3000
 
 ## Extension Token
 
-For MVP local testing:
+Open `/extension` after logging into the dashboard. Click **Generate new token**, copy the one-time token, and paste it into the extension popup.
 
-```text
-demo-token
-```
-
-For production, generate a random token in the dashboard, store only the SHA-256 hash in `extension_tokens.token_hash`, and show the raw token once.
+Production tokens are hashed with `EXTENSION_SHARED_SECRET`, stored only as hashes in `extension_tokens.token_hash`, and shown once.
 
 ## Testing On Reddit
 
@@ -191,5 +189,6 @@ Matched leads are highlighted:
 ```bash
 npm run test
 npm run check:extension
-npm --workspace apps/web run build
+npm run lint
+npm run build
 ```

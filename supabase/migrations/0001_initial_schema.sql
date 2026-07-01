@@ -216,3 +216,91 @@ alter table leads enable row level security;
 alter table lead_events enable row level security;
 alter table usage_events enable row level security;
 alter table extension_errors enable row level security;
+
+drop policy if exists users_select_own on users;
+create policy users_select_own on users
+  for select to authenticated
+  using (id = auth.uid());
+
+drop policy if exists users_insert_own on users;
+create policy users_insert_own on users
+  for insert to authenticated
+  with check (id = auth.uid());
+
+drop policy if exists users_update_own on users;
+create policy users_update_own on users
+  for update to authenticated
+  using (id = auth.uid())
+  with check (id = auth.uid());
+
+drop policy if exists workspace_members_select_member on workspace_members;
+create policy workspace_members_select_member on workspace_members
+  for select to authenticated
+  using (user_id = auth.uid());
+
+drop policy if exists workspaces_select_member on workspaces;
+create policy workspaces_select_member on workspaces
+  for select to authenticated
+  using (
+    exists (
+      select 1 from workspace_members
+      where workspace_members.workspace_id = workspaces.id
+      and workspace_members.user_id = auth.uid()
+    )
+  );
+
+drop policy if exists workspaces_update_owner on workspaces;
+create policy workspaces_update_owner on workspaces
+  for update to authenticated
+  using (owner_id = auth.uid())
+  with check (owner_id = auth.uid());
+
+drop policy if exists workspaces_insert_owner on workspaces;
+create policy workspaces_insert_owner on workspaces
+  for insert to authenticated
+  with check (owner_id = auth.uid());
+
+drop policy if exists workspace_scoped_select on campaigns;
+create policy workspace_scoped_select on campaigns
+  for select to authenticated
+  using (exists (select 1 from workspace_members where workspace_members.workspace_id = campaigns.workspace_id and workspace_members.user_id = auth.uid()));
+
+drop policy if exists workspace_scoped_select on knowledge_bases;
+create policy workspace_scoped_select on knowledge_bases
+  for select to authenticated
+  using (exists (select 1 from workspace_members where workspace_members.workspace_id = knowledge_bases.workspace_id and workspace_members.user_id = auth.uid()));
+
+drop policy if exists workspace_scoped_select on knowledge_documents;
+create policy workspace_scoped_select on knowledge_documents
+  for select to authenticated
+  using (exists (select 1 from workspace_members where workspace_members.workspace_id = knowledge_documents.workspace_id and workspace_members.user_id = auth.uid()));
+
+drop policy if exists workspace_scoped_select on keyword_groups;
+create policy workspace_scoped_select on keyword_groups
+  for select to authenticated
+  using (exists (select 1 from workspace_members where workspace_members.workspace_id = keyword_groups.workspace_id and workspace_members.user_id = auth.uid()));
+
+drop policy if exists workspace_scoped_select on template_sets;
+create policy workspace_scoped_select on template_sets
+  for select to authenticated
+  using (exists (select 1 from workspace_members where workspace_members.workspace_id = template_sets.workspace_id and workspace_members.user_id = auth.uid()));
+
+drop policy if exists workspace_scoped_select on leads;
+create policy workspace_scoped_select on leads
+  for select to authenticated
+  using (exists (select 1 from workspace_members where workspace_members.workspace_id = leads.workspace_id and workspace_members.user_id = auth.uid()));
+
+drop policy if exists workspace_scoped_select on lead_events;
+create policy workspace_scoped_select on lead_events
+  for select to authenticated
+  using (exists (select 1 from workspace_members where workspace_members.workspace_id = lead_events.workspace_id and workspace_members.user_id = auth.uid()));
+
+drop policy if exists workspace_scoped_select on usage_events;
+create policy workspace_scoped_select on usage_events
+  for select to authenticated
+  using (exists (select 1 from workspace_members where workspace_members.workspace_id = usage_events.workspace_id and workspace_members.user_id = auth.uid()));
+
+drop policy if exists workspace_scoped_select on extension_errors;
+create policy workspace_scoped_select on extension_errors
+  for select to authenticated
+  using (exists (select 1 from workspace_members where workspace_members.workspace_id = extension_errors.workspace_id and workspace_members.user_id = auth.uid()));

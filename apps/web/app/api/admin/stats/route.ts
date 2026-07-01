@@ -1,29 +1,23 @@
-import { ok } from "@/lib/api-response";
-import { demoLeads } from "@/lib/mock-data";
+import { fail, ok } from "@/lib/api-response";
+import { requireApiAdmin } from "@/lib/api-auth";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 export async function GET() {
+  const auth = await requireApiAdmin();
+  if ("error" in auth) return auth.error;
+
   const supabase = getSupabaseAdmin();
-  if (!supabase) {
-    return ok({
-      totalUsers: 12,
-      activeToday: 5,
-      activeThisMonth: 10,
-      workspaces: 7,
-      totalLeads: demoLeads.length,
-      draftsCopiedOpened: 19,
-      exports: 3,
-      failedSyncEvents: 1,
-      extensionVersions: [{ version: "1.0.0", users: 12 }]
-    });
-  }
-  const [leads, workspaces, errors] = await Promise.all([
+  if (!supabase) return fail("Server Supabase admin client is not configured.", 500);
+
+  const [leads, workspaces, users, errors] = await Promise.all([
     supabase.from("leads").select("id", { count: "exact", head: true }),
     supabase.from("workspaces").select("id", { count: "exact", head: true }),
+    supabase.from("users").select("id", { count: "exact", head: true }),
     supabase.from("extension_errors").select("id", { count: "exact", head: true })
   ]);
+
   return ok({
-    totalUsers: 0,
+    totalUsers: users.count || 0,
     activeToday: 0,
     activeThisMonth: 0,
     workspaces: workspaces.count || 0,

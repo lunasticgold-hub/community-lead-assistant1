@@ -1,4 +1,5 @@
 import { fail, ok } from "@/lib/api-response";
+import { requireApiUser } from "@/lib/api-auth";
 import { productConfig } from "@/lib/defaults";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
@@ -10,19 +11,23 @@ const allowedMime = new Set([
 ]);
 
 export async function GET() {
+  const auth = await requireApiUser();
+  if ("error" in auth) return auth.error;
   const supabase = getSupabaseAdmin();
   if (!supabase) return ok({ documents: [], localOnly: true });
-  const { data, error } = await supabase.from("knowledge_documents").select("*").order("created_at", { ascending: false }).limit(100);
+  const { data, error } = await supabase.from("knowledge_documents").select("*").eq("workspace_id", auth.workspace.id).order("created_at", { ascending: false }).limit(100);
   if (error) return fail(error.message, 500);
   return ok({ documents: data || [] });
 }
 
 export async function POST(request: Request) {
+  const auth = await requireApiUser();
+  if ("error" in auth) return auth.error;
   const form = await request.formData().catch(() => null);
   if (!form) return fail("Expected multipart form data", 400);
 
   const file = form.get("file");
-  const workspaceId = String(form.get("workspaceId") || "demo-workspace");
+  const workspaceId = auth.workspace.id;
   const knowledgeBaseId = String(form.get("knowledgeBaseId") || "");
   if (!(file instanceof File)) return fail("Missing file", 400);
 

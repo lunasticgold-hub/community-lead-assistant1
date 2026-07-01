@@ -1,6 +1,6 @@
 const VERSION = "1.0.0";
 const DEFAULTS = {
-  apiBaseUrl: "http://localhost:3000",
+  apiBaseUrl: "https://communityleadassistant.com",
   extensionToken: "",
   workspace: null,
   campaign: null,

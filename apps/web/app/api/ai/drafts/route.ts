@@ -1,12 +1,23 @@
 import { fail, ok } from "@/lib/api-response";
+import { requireApiUser } from "@/lib/api-auth";
 import { defaultKnowledgeBase, defaultTemplates } from "@/lib/defaults";
 import { buildDraftSet } from "@/lib/drafts";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
+type AiWorkspaceUsage = {
+  id: string;
+  plan: string | null;
+  monthly_ai_draft_limit: number | null;
+  monthly_ai_drafts_used: number | null;
+  trial_ends_at: string | null;
+};
+
 export async function POST(request: Request) {
+  const auth = await requireApiUser();
+  if ("error" in auth) return auth.error;
   const body = await request.json().catch(() => ({}));
   const lead = body.lead || {};
-  const workspaceId = body.workspaceId || lead.workspaceId;
+  const workspaceId = auth.workspace.id;
   const knowledgeBase = body.knowledgeBase || defaultKnowledgeBase;
   const templates = body.templates || defaultTemplates;
   const fallbackDrafts = buildDraftSet(lead, knowledgeBase, templates);
@@ -30,7 +41,7 @@ export async function POST(request: Request) {
   }
 
   const supabase = getSupabaseAdmin();
-  let workspace: any = null;
+  let workspace: AiWorkspaceUsage | null = null;
   if (supabase && workspaceId) {
     const result = await supabase
       .from("workspaces")

@@ -164,9 +164,9 @@ export const defaultKeywordGroups: KeywordGroup[] = [
   }
 ];
 
-export const demoCampaign: Campaign = {
-  id: "demo-campaign",
-  workspaceId: "demo-workspace",
+export const defaultCampaign: Campaign = {
+  id: "default-campaign",
+  workspaceId: "",
   name: "Founder communities",
   active: true,
   targetPlatforms: ["reddit", "indiehackers", "facebook", "slack", "discord", "telegram", "whatsapp"],

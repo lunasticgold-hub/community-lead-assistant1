@@ -79,6 +79,7 @@ export function LoginForm() {
         password
       });
       if (loginError) throw loginError;
+      await fetch("/api/auth/provision", { method: "POST" });
       router.push(next);
       router.refresh();
     } catch (loginError) {

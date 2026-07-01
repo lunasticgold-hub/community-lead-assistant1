@@ -1,22 +1,14 @@
 import { createHash } from "crypto";
-import { demoBootstrap } from "./mock-data";
 import { getSupabaseAdmin } from "./supabase-admin";
 
 export function hashExtensionToken(token: string): string {
-  const pepper = process.env.EXTENSION_SHARED_SECRET || process.env.EXTENSION_TOKEN_PEPPER || "local-dev-pepper";
+  const pepper = process.env.EXTENSION_SHARED_SECRET;
+  if (!pepper) throw new Error("EXTENSION_SHARED_SECRET is not configured.");
   return createHash("sha256").update(`${pepper}:${token}`).digest("hex");
 }
 
 export async function authenticateExtensionToken(token: string) {
   if (!token) return null;
-  if (token === "demo-token") {
-    return {
-      workspaceId: "demo-workspace",
-      userId: "demo-user",
-      bootstrap: demoBootstrap
-    };
-  }
-
   const supabase = getSupabaseAdmin();
   if (!supabase) return null;
   const tokenHash = hashExtensionToken(token);

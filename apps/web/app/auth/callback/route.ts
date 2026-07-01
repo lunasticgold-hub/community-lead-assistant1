@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { ensureUserWorkspace } from "@/lib/provisioning";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: NextRequest) {
@@ -20,9 +21,11 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
     if (exchangeError) throw exchangeError;
+    const { data } = await supabase.auth.getUser();
+    if (data.user) await ensureUserWorkspace(data.user);
     return NextResponse.redirect(new URL(next, requestUrl.origin));
   } catch (authError) {
     const redirectUrl = new URL("/login", requestUrl.origin);

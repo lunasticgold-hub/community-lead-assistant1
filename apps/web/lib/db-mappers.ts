@@ -1,5 +1,7 @@
 import type { Lead } from "./types";
 
+type LeadDbRow = Record<string, unknown>;
+
 export function leadToDb(lead: Partial<Lead>) {
   return {
     id: lead.id,
@@ -27,31 +29,31 @@ export function leadToDb(lead: Partial<Lead>) {
   };
 }
 
-export function leadFromDb(row: Record<string, any>): Lead {
+export function leadFromDb(row: LeadDbRow): Lead {
   return {
-    id: row.id,
-    workspaceId: row.workspace_id,
-    campaignId: row.campaign_id,
-    platform: row.platform,
-    communityName: row.community_name,
-    authorName: row.author_name,
-    authorProfileUrl: row.author_profile_url || "",
-    sourceUrl: row.source_url || "",
-    postText: row.post_text || "",
-    postSnippet: row.post_snippet || "",
-    matchedKeywords: row.matched_keywords || [],
-    negativeSignals: row.negative_signals || [],
-    leadScore: row.lead_score || 0,
-    leadTemperature: row.lead_temperature || "Review",
-    status: row.status || "New",
-    notes: row.notes || "",
-    ownerId: row.owner_id || null,
-    followUpDate: row.follow_up_date || null,
-    outreachDraft: row.outreach_draft || "",
-    followUpDraft: row.follow_up_draft || "",
-    duplicateKey: row.duplicate_key || "",
-    createdAt: row.created_at || "",
-    updatedAt: row.updated_at || "",
+    id: String(row.id || ""),
+    workspaceId: String(row.workspace_id || ""),
+    campaignId: String(row.campaign_id || ""),
+    platform: String(row.platform || ""),
+    communityName: String(row.community_name || ""),
+    authorName: String(row.author_name || ""),
+    authorProfileUrl: String(row.author_profile_url || ""),
+    sourceUrl: String(row.source_url || ""),
+    postText: String(row.post_text || ""),
+    postSnippet: String(row.post_snippet || ""),
+    matchedKeywords: Array.isArray(row.matched_keywords) ? row.matched_keywords.map(String) : [],
+    negativeSignals: Array.isArray(row.negative_signals) ? row.negative_signals.map(String) : [],
+    leadScore: Number(row.lead_score || 0),
+    leadTemperature: row.lead_temperature === "Hot" || row.lead_temperature === "Warm" || row.lead_temperature === "Ignore" ? row.lead_temperature : "Review",
+    status: typeof row.status === "string" ? (row.status as Lead["status"]) : "New",
+    notes: String(row.notes || ""),
+    ownerId: typeof row.owner_id === "string" ? row.owner_id : null,
+    followUpDate: typeof row.follow_up_date === "string" ? row.follow_up_date : null,
+    outreachDraft: String(row.outreach_draft || ""),
+    followUpDraft: String(row.follow_up_draft || ""),
+    duplicateKey: String(row.duplicate_key || ""),
+    createdAt: String(row.created_at || ""),
+    updatedAt: String(row.updated_at || ""),
     synced: true
   };
 }

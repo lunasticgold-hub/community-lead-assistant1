@@ -44,7 +44,7 @@ function bind() {
 
 async function login() {
   const token = els.token.value.trim();
-  const apiBaseUrl = els.apiBaseUrl.value.trim() || "http://localhost:3000";
+  const apiBaseUrl = els.apiBaseUrl.value.trim() || "https://communityleadassistant.com";
   if (!token) return toast("Paste an extension token");
   const response = await chrome.runtime.sendMessage({ type: "LOGIN_WITH_TOKEN", token, apiBaseUrl });
   if (!response?.ok) return toast(response?.error || "Login failed");

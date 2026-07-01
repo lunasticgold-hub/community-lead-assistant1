@@ -6,6 +6,8 @@
   "permissions": ["storage", "tabs", "activeTab", "scripting", "downloads", "clipboardWrite"],
   "host_permissions": [
     "http://localhost:3000/*",
+    "https://communityleadassistant.com/*",
+    "https://www.communityleadassistant.com/*",
     "https://*.vercel.app/*",
     "https://www.reddit.com/*",
     "https://reddit.com/*",

@@ -5,6 +5,8 @@ import { getSupabaseBrowserEnv } from "./env";
 const protectedPrefixes = [
   "/admin",
   "/analytics",
+  "/app",
+  "/account",
   "/billing",
   "/campaigns",
   "/dashboard",
@@ -17,7 +19,8 @@ const protectedPrefixes = [
   "/onboarding",
   "/platforms",
   "/team",
-  "/templates"
+  "/templates",
+  "/settings"
 ];
 
 const authPages = ["/login", "/signup"];

@@ -7,6 +7,6 @@ export async function POST() {
 
   return ok({
     received: true,
-    message: "Webhook placeholder ready. Verify Stripe signatures and update workspace billing fields when Stripe is enabled."
+    message: "Stripe webhook endpoint is inactive until billing keys are configured. Verify Stripe signatures and update workspace billing fields when billing is enabled."
   });
 }

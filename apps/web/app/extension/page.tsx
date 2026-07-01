@@ -1,5 +1,6 @@
 import { AppShell } from "@/components/app-shell";
-import { Badge, Button, Card } from "@/components/ui";
+import { ExtensionTokenGenerator } from "@/components/extension-token-generator";
+import { Badge, Card } from "@/components/ui";
 
 export default function ExtensionPage() {
   return (
@@ -11,9 +12,8 @@ export default function ExtensionPage() {
           <p className="mt-2 text-sm leading-6 text-slate-600">
             Users sign into the SaaS dashboard with email/password or Google. Then this page creates a workspace-scoped extension token and stores only its hash.
           </p>
-          <pre className="mt-4 rounded-xl bg-slate-950 p-4 text-sm text-white">demo-token</pre>
-          <div className="mt-4"><Button>Generate new token</Button></div>
-          <p className="mt-3 text-xs text-slate-500">Local testing accepts demo-token. Production tokens should be shown once and revocable.</p>
+          <div className="mt-4"><ExtensionTokenGenerator /></div>
+          <p className="mt-3 text-xs text-slate-500">Production tokens are hashed with EXTENSION_SHARED_SECRET and stored as hashes only.</p>
         </Card>
 
         <Card>

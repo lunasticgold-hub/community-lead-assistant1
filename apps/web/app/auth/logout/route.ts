@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 async function signOut(request: NextRequest) {
   const requestUrl = new URL(request.url);
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     await supabase.auth.signOut();
   } catch {
     // A logout should still take the user back to login even if Supabase is not configured locally.

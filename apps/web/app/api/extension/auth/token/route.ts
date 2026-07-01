@@ -8,7 +8,6 @@ export async function POST(request: Request) {
   if (!auth) return fail("Invalid or revoked extension token", 401);
   return ok({
     workspaceId: auth.workspaceId,
-    userId: auth.userId,
-    bootstrap: auth.bootstrap
+    userId: auth.userId
   });
 }
