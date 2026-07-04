@@ -42,7 +42,33 @@ export async function POST(request: Request) {
     return fail("Lead limit reached. Upgrade to a paid plan to sync more leads.", 402);
   }
 
-  const { error } = await supabase.from("leads").upsert(allowedRows, { onConflict: "workspace_id,duplicate_key" });
+  let { error } = await supabase.from("leads").upsert(allowedRows, { onConflict: "workspace_id,duplicate_key" });
+  if (error && /community_url|platform_user_id|profile_variables|current_sequence_id|current_sequence_step|schema cache|column/i.test(error.message)) {
+    const compatibleRows = allowedRows.map(row => {
+      const {
+        community_url: _communityUrl,
+        platform_user_id: _platformUserId,
+        profile_variables: _profileVariables,
+        current_sequence_id: _currentSequenceId,
+        current_sequence_step: _currentSequenceStep,
+        ...rest
+      } = row as LeadDbWriteRow & {
+        community_url?: string;
+        platform_user_id?: string;
+        profile_variables?: Record<string, unknown>;
+        current_sequence_id?: string | null;
+        current_sequence_step?: number;
+      };
+      void _communityUrl;
+      void _platformUserId;
+      void _profileVariables;
+      void _currentSequenceId;
+      void _currentSequenceStep;
+      return rest;
+    });
+    const retry = await supabase.from("leads").upsert(compatibleRows, { onConflict: "workspace_id,duplicate_key" });
+    error = retry.error;
+  }
   if (error) return fail(error.message, 500);
   if (allowedNewKeys.size) {
     await supabase

@@ -13,7 +13,7 @@ export default async function LeadsPage() {
         {["Update status", "Assign owner", "Export selected", "Add follow-up", "Mark not relevant"].map(action => <Button key={action} variant="secondary">{action}</Button>)}
       </div>
       <LeadTable leads={leads} />
-      {!leads.length ? <Card className="mt-4"><p className="text-sm text-slate-600">No leads found yet. Install the extension, generate a token, and scan a supported community.</p></Card> : null}
+      {!leads.length ? <Card className="mt-4"><p className="text-sm text-slate-600">No leads found yet. Install the extension, sign in from the popup, and scan a supported community.</p></Card> : null}
     </AppShell>
   );
 }

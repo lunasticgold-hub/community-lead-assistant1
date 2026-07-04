@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
-import { MarketingShell } from "@/components/marketing-shell";
+import { MarketingShellView } from "@/components/marketing-shell-view";
 import { Button, Card, Field, TextInput } from "@/components/ui";
 import { createClient } from "@/lib/supabase/client";
 
@@ -87,7 +87,7 @@ export default function SignupPage() {
   }
 
   return (
-    <MarketingShell>
+    <MarketingShellView>
       <main className="mx-auto max-w-md px-6 py-16">
         <Card>
           <h1 className="text-2xl font-semibold">Start your 7-day trial</h1>
@@ -112,6 +112,6 @@ export default function SignupPage() {
           <p className="mt-4 text-xs leading-5 text-slate-500">Google OAuth is enabled through Supabase Auth once the Google client ID and secret are added in the Supabase dashboard.</p>
         </Card>
       </main>
-    </MarketingShell>
+    </MarketingShellView>
   );
 }

@@ -1,6 +1,6 @@
 import { fail, ok } from "@/lib/api-response";
 import { requireApiUser } from "@/lib/api-auth";
-import { leadFromDb, leadToDb } from "@/lib/db-mappers";
+import { leadFromDb, leadPatchToDb } from "@/lib/db-mappers";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 type LeadRouteContext = { params: Promise<{ id: string }> };
@@ -23,7 +23,7 @@ export async function PATCH(request: Request, context: LeadRouteContext) {
   const body = await request.json().catch(() => ({}));
   const supabase = getSupabaseAdmin();
   if (!supabase) return fail("Server Supabase admin client is not configured.", 500);
-  const { data, error } = await supabase.from("leads").update(leadToDb(body)).eq("workspace_id", auth.workspace.id).eq("id", id).select("*").single();
+  const { data, error } = await supabase.from("leads").update(leadPatchToDb(body)).eq("workspace_id", auth.workspace.id).eq("id", id).select("*").single();
   if (error) return fail(error.message, 500);
   return ok({ lead: leadFromDb(data) });
 }

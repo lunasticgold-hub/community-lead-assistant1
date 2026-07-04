@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
+import { PlatformLogo, platformDisplayName } from "@/components/platform-logo";
 import { Badge, Card } from "@/components/ui";
 import { requireWorkspace } from "@/lib/auth/session";
 import { getWorkspaceLeads } from "@/lib/data/leads";
@@ -15,6 +17,8 @@ export default async function DashboardPage() {
   const hot = leads.filter(lead => lead.leadTemperature === "Hot").length;
   const followUpsDue = leads.filter(lead => lead.status === "Follow-up Due").length;
   const topSignals = countTop(leads.flatMap(lead => lead.matchedKeywords));
+  const platformCounts = countTop(leads.map(lead => lead.platform));
+  const maxPlatform = Math.max(1, ...platformCounts.map(([, count]) => count));
 
   return (
     <AppShell title="Dashboard">
@@ -34,6 +38,44 @@ export default async function DashboardPage() {
           </div>
         </Card>
         <Card>
+          <h2 className="font-semibold">Platform performance</h2>
+          <div className="mt-4 space-y-3">
+            {platformCounts.length ? platformCounts.map(([platform, count]) => (
+              <div key={platform}>
+                <div className="mb-2 flex items-center justify-between gap-3 text-sm">
+                  <div className="flex items-center gap-2 font-medium">
+                    <PlatformLogo platform={platform} className="h-7 w-7 rounded-lg" />
+                    <span>{platformDisplayName(platform)}</span>
+                  </div>
+                  <span>{count}</span>
+                </div>
+                <div className="h-2 rounded-full bg-slate-100"><div className="h-2 rounded-full bg-brand" style={{ width: `${Math.max(8, Math.round((count / maxPlatform) * 100))}%` }} /></div>
+              </div>
+            )) : <p className="text-sm text-slate-500">No platform data yet.</p>}
+          </div>
+        </Card>
+      </div>
+      <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_.8fr]">
+        <Card>
+          <h2 className="font-semibold">Recent lead activity</h2>
+          <div className="mt-4 space-y-3">
+            {leads.slice(0, 8).map(lead => (
+              <div key={lead.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-50 p-3">
+                <div className="flex items-center gap-3">
+                  <PlatformLogo platform={lead.platform} className="h-9 w-9" />
+                  <div>
+                    <div className="font-medium">{lead.authorName || "Unknown author"}</div>
+                    <div className="text-sm text-slate-500">{platformDisplayName(lead.platform)} / {lead.communityName}</div>
+                    {lead.sourceUrl ? <Link className="text-xs font-semibold text-blue-700 hover:text-blue-900" href={lead.sourceUrl} target="_blank">Open post</Link> : null}
+                  </div>
+                </div>
+                <Badge tone={lead.leadTemperature === "Hot" ? "green" : "orange"}>{lead.leadTemperature} {lead.leadScore}</Badge>
+              </div>
+            ))}
+            {!leads.length ? <p className="text-sm text-slate-500">No leads synced yet. Install the extension and start a scan.</p> : null}
+          </div>
+        </Card>
+        <Card>
           <h2 className="font-semibold">Top signals</h2>
           <div className="mt-4 flex flex-wrap gap-2">
             {topSignals.length ? topSignals.map(([signal]) => <Badge key={signal}>{signal}</Badge>) : <p className="text-sm text-slate-500">No lead signals yet.</p>}
@@ -48,18 +90,6 @@ export default async function DashboardPage() {
           </div>
         </Card>
       </div>
-      <Card className="mt-6">
-        <h2 className="font-semibold">Recent lead activity</h2>
-        <div className="mt-4 space-y-3">
-          {leads.slice(0, 8).map(lead => (
-            <div key={lead.id} className="flex items-center justify-between rounded-xl bg-slate-50 p-3">
-              <div><div className="font-medium">{lead.authorName || "Unknown author"}</div><div className="text-sm text-slate-500">{lead.platform} / {lead.communityName}</div></div>
-              <Badge tone={lead.leadTemperature === "Hot" ? "green" : "orange"}>{lead.leadTemperature} {lead.leadScore}</Badge>
-            </div>
-          ))}
-          {!leads.length ? <p className="text-sm text-slate-500">No leads synced yet. Install the extension and start a scan.</p> : null}
-        </div>
-      </Card>
     </AppShell>
   );
 }

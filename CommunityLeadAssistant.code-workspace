@@ -1,0 +1,115 @@
+{
+  "folders": [
+    {
+      "name": "Community Lead Assistant - Root",
+      "path": "."
+    },
+    {
+      "name": "Web App",
+      "path": "apps/web"
+    },
+    {
+      "name": "Chrome Extension",
+      "path": "apps/extension"
+    },
+    {
+      "name": "Extension Download Package",
+      "path": "extension-download-package"
+    },
+    {
+      "name": "Supabase",
+      "path": "supabase"
+    },
+    {
+      "name": "Tests",
+      "path": "tests"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/.next": true,
+      "**/node_modules": true
+    },
+    "search.exclude": {
+      "**/.next": true,
+      "**/node_modules": true,
+      "**/*.zip": true,
+      "**/package-lock.json": true
+    },
+    "typescript.tsdk": "apps/web/node_modules/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "vscode.typescript-language-features",
+    "eslint.workingDirectories": [
+      {
+        "directory": "apps/web",
+        "changeProcessCWD": true
+      }
+    ],
+    "tailwindCSS.includeLanguages": {
+      "typescript": "javascript",
+      "typescriptreact": "javascript"
+    }
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Start Web App",
+        "type": "shell",
+        "command": "npm run dev",
+        "group": "build",
+        "problemMatcher": []
+      },
+      {
+        "label": "Build Web App",
+        "type": "shell",
+        "command": "npm run build",
+        "group": "build",
+        "problemMatcher": []
+      },
+      {
+        "label": "Lint",
+        "type": "shell",
+        "command": "npm run lint",
+        "group": "test",
+        "problemMatcher": []
+      },
+      {
+        "label": "Test",
+        "type": "shell",
+        "command": "npm test",
+        "group": "test",
+        "problemMatcher": []
+      },
+      {
+        "label": "Check Extension",
+        "type": "shell",
+        "command": "npm run check:extension",
+        "group": "test",
+        "problemMatcher": []
+      },
+      {
+        "label": "Full Check",
+        "type": "shell",
+        "command": "npm run lint && npm run build && npm test && npm run check:extension",
+        "group": "test",
+        "problemMatcher": []
+      },
+      {
+        "label": "Rebuild Extension ZIP",
+        "type": "shell",
+        "command": "powershell -ExecutionPolicy Bypass -File scripts\\\\rebuild-extension-package.ps1",
+        "group": "build",
+        "problemMatcher": []
+      }
+    ]
+  },
+  "extensions": {
+    "recommendations": [
+      "bradlc.vscode-tailwindcss",
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode"
+    ]
+  }
+}

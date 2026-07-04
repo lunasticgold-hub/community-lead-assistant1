@@ -9,6 +9,11 @@ export function leadToDb(lead: Partial<Lead>) {
     campaign_id: lead.campaignId,
     platform: lead.platform,
     community_name: lead.communityName,
+    community_url: lead.communityUrl || "",
+    platform_user_id: lead.platformUserId || "",
+    profile_variables: lead.profileVariables || {},
+    current_sequence_id: lead.currentSequenceId || null,
+    current_sequence_step: lead.currentSequenceStep || 0,
     author_name: lead.authorName,
     author_profile_url: lead.authorProfileUrl,
     source_url: lead.sourceUrl,
@@ -29,6 +34,28 @@ export function leadToDb(lead: Partial<Lead>) {
   };
 }
 
+export function leadPatchToDb(lead: Partial<Lead>) {
+  const patch: Record<string, unknown> = {
+    updated_at: new Date().toISOString()
+  };
+
+  if (lead.status !== undefined) patch.status = lead.status;
+  if (lead.notes !== undefined) patch.notes = lead.notes;
+  if (lead.ownerId !== undefined) patch.owner_id = lead.ownerId;
+  if (lead.followUpDate !== undefined) patch.follow_up_date = lead.followUpDate || null;
+  if (lead.outreachDraft !== undefined) patch.outreach_draft = lead.outreachDraft;
+  if (lead.followUpDraft !== undefined) patch.follow_up_draft = lead.followUpDraft;
+  if (lead.communityUrl !== undefined) patch.community_url = lead.communityUrl || "";
+  if (lead.sourceUrl !== undefined) patch.source_url = lead.sourceUrl || "";
+  if (lead.authorProfileUrl !== undefined) patch.author_profile_url = lead.authorProfileUrl || "";
+  if (lead.platformUserId !== undefined) patch.platform_user_id = lead.platformUserId || "";
+  if (lead.profileVariables !== undefined) patch.profile_variables = lead.profileVariables || {};
+  if (lead.currentSequenceId !== undefined) patch.current_sequence_id = lead.currentSequenceId || null;
+  if (lead.currentSequenceStep !== undefined) patch.current_sequence_step = lead.currentSequenceStep || 0;
+
+  return patch;
+}
+
 export function leadFromDb(row: LeadDbRow): Lead {
   return {
     id: String(row.id || ""),
@@ -36,6 +63,11 @@ export function leadFromDb(row: LeadDbRow): Lead {
     campaignId: String(row.campaign_id || ""),
     platform: String(row.platform || ""),
     communityName: String(row.community_name || ""),
+    communityUrl: String(row.community_url || ""),
+    platformUserId: String(row.platform_user_id || ""),
+    profileVariables: isStringRecord(row.profile_variables) ? row.profile_variables : {},
+    currentSequenceId: typeof row.current_sequence_id === "string" ? row.current_sequence_id : null,
+    currentSequenceStep: Number(row.current_sequence_step || 0),
     authorName: String(row.author_name || ""),
     authorProfileUrl: String(row.author_profile_url || ""),
     sourceUrl: String(row.source_url || ""),
@@ -56,4 +88,8 @@ export function leadFromDb(row: LeadDbRow): Lead {
     updatedAt: String(row.updated_at || ""),
     synced: true
   };
+}
+
+function isStringRecord(value: unknown): value is Record<string, string> {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
 }

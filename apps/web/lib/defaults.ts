@@ -169,7 +169,7 @@ export const defaultCampaign: Campaign = {
   workspaceId: "",
   name: "Founder communities",
   active: true,
-  targetPlatforms: ["reddit", "indiehackers", "facebook", "slack", "discord", "telegram", "whatsapp"],
+  targetPlatforms: ["reddit", "linkedin", "facebook", "discord", "slack", "telegram", "whatsapp", "indiehackers", "producthunt", "x"],
   minScore: 25,
   scanMode: "review_leads",
   pauseAfterLeads: 25,

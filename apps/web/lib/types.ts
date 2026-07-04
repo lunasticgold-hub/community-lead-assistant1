@@ -2,10 +2,13 @@ export type Platform =
   | "reddit"
   | "indiehackers"
   | "facebook"
+  | "linkedin"
   | "slack"
   | "discord"
   | "telegram"
-  | "whatsapp";
+  | "whatsapp"
+  | "producthunt"
+  | "x";
 
 export type ScanMode = "scan_only" | "review_leads";
 export type LeadTemperature = "Hot" | "Warm" | "Review" | "Ignore";
@@ -15,6 +18,10 @@ export type LeadStatus =
   | "Draft Opened"
   | "Contacted Manually"
   | "Follow-up Due"
+  | "Replied"
+  | "Interested"
+  | "Not Interested"
+  | "Nurture"
   | "Not Relevant"
   | "Converted"
   | "Ignored";
@@ -83,6 +90,11 @@ export type Lead = {
   campaignId: string;
   platform: Platform | string;
   communityName: string;
+  communityUrl?: string;
+  platformUserId?: string;
+  profileVariables?: Record<string, string>;
+  currentSequenceId?: string | null;
+  currentSequenceStep?: number;
   authorName: string;
   authorProfileUrl: string;
   sourceUrl: string;
@@ -110,4 +122,93 @@ export type ScoreResult = {
   matchedKeywords: string[];
   negativeSignals: string[];
   breakdown: { label: string; points: number }[];
+};
+
+export type OutreachSequenceStatus = "draft" | "active" | "paused" | "completed";
+export type LeadSequenceStatus = "active" | "paused" | "replied" | "completed" | "archived";
+export type DraftQueueStatus = "queued" | "review" | "ready_to_send" | "sent_manually" | "replied" | "archived" | "failed";
+
+export type OutreachSequence = {
+  id: string;
+  workspaceId: string;
+  campaignId: string | null;
+  name: string;
+  objective: string;
+  targetPlatform: Platform | string;
+  status: OutreachSequenceStatus;
+  timezone: string;
+  sendWindowStart: string;
+  sendWindowEnd: string;
+  sendDays: string[];
+  dailyReviewLimit: number;
+  createdBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type OutreachSequenceStep = {
+  id: string;
+  workspaceId: string;
+  sequenceId: string;
+  stepOrder: number;
+  name: string;
+  delayHours: number;
+  template: string;
+  variationCount: number;
+  locked: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type LeadSequence = {
+  id: string;
+  workspaceId: string;
+  leadId: string;
+  sequenceId: string;
+  currentStepId: string | null;
+  currentStepOrder: number;
+  status: LeadSequenceStatus;
+  repliedAt: string | null;
+  pausedAt: string | null;
+  completedAt: string | null;
+  createdBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type OutreachDraftQueueItem = {
+  id: string;
+  workspaceId: string;
+  leadId: string;
+  leadSequenceId: string | null;
+  sequenceId: string | null;
+  stepId: string | null;
+  stepOrder: number;
+  platform: string;
+  status: DraftQueueStatus;
+  dueAt: string;
+  draftText: string;
+  draftVariations: string[];
+  selectedVariationIndex: number;
+  copiedAt: string | null;
+  profileOpenedAt: string | null;
+  sentManuallyAt: string | null;
+  approvedAt: string | null;
+  failedReason: string | null;
+  createdBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type OutreachActivityEvent = {
+  id: string;
+  workspaceId: string;
+  leadId: string | null;
+  leadSequenceId: string | null;
+  queueItemId: string | null;
+  sequenceId: string | null;
+  userId: string | null;
+  eventType: string;
+  metadata: Record<string, unknown>;
+  createdAt: string;
 };

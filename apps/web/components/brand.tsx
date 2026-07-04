@@ -16,8 +16,8 @@ export function BrandLockup({ compact = false }: { compact?: boolean }) {
     <span className="flex items-center gap-3">
       <BrandMark />
       <span className="leading-tight">
-        <span className="block font-semibold text-slate-950">{compact ? "Community Lead" : "Community Lead Assistant"}</span>
-        {compact ? <span className="block text-xs text-slate-500">Acme Growth Studio</span> : null}
+        <span className="block font-semibold text-slate-950 dark:text-white">{compact ? "Community Lead" : "Community Lead Assistant"}</span>
+        {compact ? <span className="block text-xs text-slate-500 dark:text-slate-400">Workspace</span> : null}
       </span>
     </span>
   );

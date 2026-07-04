@@ -1,11 +1,14 @@
 import Link from "next/link";
-import { BarChart3, BookOpen, CreditCard, Download, FileText, Gauge, Inbox, KeyRound, LayoutDashboard, Megaphone, Settings, Shield, Users } from "lucide-react";
+import { BarChart3, BookOpen, CreditCard, Download, FileText, Gauge, GitBranch, Inbox, KeyRound, LayoutDashboard, Megaphone, Send, Settings, Shield, Users } from "lucide-react";
 import { BrandLockup } from "./brand";
 
 const nav = [
   ["Dashboard", "/dashboard", LayoutDashboard],
   ["Leads", "/leads", Inbox],
   ["Campaigns", "/campaigns", Megaphone],
+  ["Sequences", "/sequences", GitBranch],
+  ["Review Queue", "/review-queue", Send],
+  ["Human Inbox", "/inbox", Inbox],
   ["Knowledge Base", "/knowledge-base", BookOpen],
   ["Keywords", "/keywords", KeyRound],
   ["Templates", "/templates", FileText],
