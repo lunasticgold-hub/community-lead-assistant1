@@ -1,0 +1,85 @@
+import Link from "next/link";
+import { CmsEmptyState, cmsPreviewValue } from "@/components/cms/cms-dashboard";
+import { CmsMediaUploader } from "@/components/cms/cms-media-uploader";
+import { CmsResourceEditor } from "@/components/cms/cms-resource-editor";
+import { listCmsRows } from "@/lib/cms/data";
+import type { CmsModule } from "@/lib/cms/types";
+
+type CmsResourcePageProps = {
+  module: CmsModule;
+  searchParams: URLSearchParams;
+};
+
+export async function CmsResourcePage({ module, searchParams }: CmsResourcePageProps) {
+  const url = new URL(`https://cms.local/admin/cms/${module.slug}`);
+  searchParams.forEach((value, key) => url.searchParams.set(key, value));
+  const result = await listCmsRows(module, url);
+  const search = searchParams.get("search") || "";
+
+  return (
+    <div className="space-y-5">
+      <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-200">{module.category}</div>
+            <h1 className="mt-2 text-3xl font-semibold text-white">{module.title}</h1>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">{module.description}</p>
+          </div>
+          <Link href={`/api/cms/${module.slug}?format=csv`} className="rounded-xl border border-white/10 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10">
+            Export CSV
+          </Link>
+        </div>
+        <form className="mt-5 flex max-w-xl gap-2">
+          <input
+            name="search"
+            defaultValue={search}
+            placeholder={`Search ${module.title.toLowerCase()}`}
+            className="flex-1 rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2 text-sm text-white outline-none focus:border-blue-400"
+          />
+          <button className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-950">Search</button>
+        </form>
+      </div>
+
+      {module.slug === "media-library" ? <CmsMediaUploader /> : null}
+
+      <details className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+        <summary className="cursor-pointer text-lg font-semibold text-white">{module.createLabel}</summary>
+        <div className="mt-5">
+          <CmsResourceEditor module={module} />
+        </div>
+      </details>
+
+      {result.tableMissing ? (
+        <CmsEmptyState
+          title="CMS migration is not installed"
+          body="Run supabase/migrations/0005_standalone_cms.sql in Supabase, then refresh this page."
+        />
+      ) : null}
+
+      {!result.tableMissing && !result.rows.length ? (
+        <CmsEmptyState title={`No ${module.title.toLowerCase()} records yet`} body={`Create your first item with "${module.createLabel}" above.`} />
+      ) : null}
+
+      <div className="grid gap-4">
+        {result.rows.map(row => (
+          <details key={String(row.id)} className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+            <summary className="cursor-pointer list-none">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-semibold text-white">{cmsPreviewValue(row, ["title", "name", "question", "label", "email", "file_name", "source_path", "key"])}</h2>
+                  <p className="mt-1 text-sm text-slate-400">
+                    {String(row.status || row.page_type || row.folder || row.group_name || module.table)}
+                  </p>
+                </div>
+                <div className="text-xs text-slate-500">{typeof row.updated_at === "string" ? row.updated_at.slice(0, 16).replace("T", " ") : "Not saved"}</div>
+              </div>
+            </summary>
+            <div className="mt-5 border-t border-white/10 pt-5">
+              <CmsResourceEditor module={module} row={row} compact />
+            </div>
+          </details>
+        ))}
+      </div>
+    </div>
+  );
+}
