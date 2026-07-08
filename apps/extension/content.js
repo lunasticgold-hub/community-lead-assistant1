@@ -52,21 +52,23 @@
     if (!running) return;
     const result = await scanVisible(mode);
     if (result.stopped) return;
-    const state = await chrome.storage.local.get(["campaign"]);
+    const state = await chrome.storage.local.get(["campaign", "scanDelaySeconds"]);
     await chrome.runtime.sendMessage({ type: "SCAN_CYCLE_COMPLETE", summary: result }).catch(() => {});
     if (!running || result.ok === false) return;
     await autoScrollForMore();
-    const min = campaignNumber(state.campaign, "minGapSec", "min_gap_sec", 7) * 1000;
-    const max = campaignNumber(state.campaign, "maxGapSec", "max_gap_sec", 10) * 1000;
+    const delay = scanDelayMs(state.scanDelaySeconds);
     await chrome.runtime.sendMessage({ type: "SCAN_PROGRESS", progress: { running: true, current: result.scanned || 0, total: result.scanned || 0, activity: "Waiting for more visible posts" } });
-    timer = setTimeout(() => scanLoop(mode), Number.isFinite(min + max) ? randomInt(min, Math.max(min, max)) : randomInt(7000, 10000));
+    timer = setTimeout(() => scanLoop(mode), delay);
   }
 
   async function scanVisible(mode) {
     const adapter = currentAdapter();
     if (!adapter) return { ok: false, error: "Unsupported page" };
-    const state = await chrome.storage.local.get(["campaign", "knowledgeBase", "keywordGroups", "templateSet", "workspace"]);
+    const state = await chrome.storage.local.get(["campaign", "knowledgeBase", "keywordGroups", "templateSet", "workspace", "scanDelaySeconds", "keywordGateEnabled", "keywordGateTerms"]);
     const campaign = state.campaign || {};
+    const perPostDelayMs = scanDelayMs(state.scanDelaySeconds);
+    const keywordGateTerms = parseKeywordGateTerms(state.keywordGateTerms);
+    const keywordGateActive = Boolean(state.keywordGateEnabled);
     const targetPlatforms = campaignPlatforms(campaign);
     if (targetPlatforms.length && !targetPlatforms.includes(adapter.id)) {
       const activity = `${adapter.platformName} is disabled in this campaign`;
@@ -106,12 +108,23 @@
       const text = adapter.extractText(item);
       if (!text || text.length < 20) {
         adapter.highlightItem(item, "checked");
-        await sleep(220);
+        await sleep(perPostDelayMs);
         continue;
       }
       if (adapter.detectPromotedOrSponsored(item)) {
         adapter.highlightItem(item, "skipped");
-        await sleep(220);
+        await sleep(perPostDelayMs);
+        continue;
+      }
+      if (keywordGateActive && !keywordGateTerms.length) {
+        adapter.highlightItem(item, "checked");
+        await chrome.runtime.sendMessage({ type: "SCAN_PROGRESS", progress: { running, current: scanned, total: items.length, activity: "Keyword-only mode is on. Add keywords in Scan settings." } }).catch(() => {});
+        await sleep(perPostDelayMs);
+        continue;
+      }
+      if (keywordGateActive && !containsAnyKeyword(text, keywordGateTerms)) {
+        adapter.highlightItem(item, "checked");
+        await sleep(perPostDelayMs);
         continue;
       }
 
@@ -131,7 +144,7 @@
       const duplicateKey = primaryDuplicateKey(leadBase);
       if (seenKeys.has(duplicateKey)) {
         adapter.highlightItem(item, "checked");
-        await sleep(220);
+        await sleep(perPostDelayMs);
         continue;
       }
       seenKeys.add(duplicateKey);
@@ -139,7 +152,7 @@
       const score = scoreLead(text, state.keywordGroups || []);
       if (score.temperature === "Ignore" || score.score < minScore) {
         adapter.highlightItem(item, "checked");
-        await sleep(220);
+        await sleep(perPostDelayMs);
         continue;
       }
 
@@ -157,6 +170,7 @@
         createdAt,
         updatedAt: createdAt,
         duplicateKey,
+        globalIdentityKey: duplicateKey,
         synced: false
       };
       const drafts = buildDrafts(lead, state.knowledgeBase || {}, state.templateSet || {});
@@ -172,7 +186,7 @@
       }).catch(() => {});
       found += 1;
       runFound += 1;
-      await sleep(350);
+      await sleep(perPostDelayMs);
     }
     return { ok: true, scanned, found };
   }
@@ -295,15 +309,18 @@
     if (existing) return;
     const overlay = document.createElement("div");
     overlay.id = "cla-profile-overlay";
-    overlay.innerHTML = `
-      <div class="cla-profile-card">
-        <div>
-          <strong>Community Lead</strong>
-          <span>${escapeHtml(status.platform)}</span>
-        </div>
-        <button type="button">Add to Outreach Sequence</button>
-      </div>
-    `;
+    const card = document.createElement("div");
+    card.className = "cla-profile-card";
+    const copy = document.createElement("div");
+    const title = document.createElement("strong");
+    title.textContent = "Community Lead";
+    const platform = document.createElement("span");
+    platform.textContent = status.platform || "Supported platform";
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = "Add to Outreach Sequence";
+    copy.append(title, platform);
+    card.append(copy, button);
     const style = document.createElement("style");
     style.textContent = `
       #cla-profile-overlay{position:fixed;right:18px;bottom:88px;z-index:2147483647;font-family:Inter,Arial,sans-serif}
@@ -313,8 +330,9 @@
       #cla-profile-overlay button{border:0;border-radius:12px;background:#2563eb;color:#fff;font-weight:800;font-size:12px;padding:10px 12px;cursor:pointer}
       #cla-profile-overlay button[disabled]{cursor:not-allowed;opacity:.7}
     `;
+    overlay.appendChild(card);
     overlay.appendChild(style);
-    overlay.querySelector("button")?.addEventListener("click", async event => {
+    button.addEventListener("click", async event => {
       const button = event.currentTarget;
       if (!(button instanceof HTMLButtonElement)) return;
       button.disabled = true;
@@ -382,10 +400,6 @@
 
   function cleanText(value) {
     return String(value || "").replace(/\s+/g, " ").trim();
-  }
-
-  function escapeHtml(value) {
-    return String(value || "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#039;" }[char]));
   }
 
   function scoreLead(text, groups) {
@@ -457,15 +471,55 @@
     return Object.entries(values).reduce((text, [key, value]) => text.replaceAll(`{${key}}`, value), template).trim();
   }
 
+  function scanDelayMs(value) {
+    const seconds = Math.min(30, Math.max(10, Number(value || 10)));
+    return seconds * 1000;
+  }
+
+  function parseKeywordGateTerms(value) {
+    return String(value || "")
+      .split(/[\n,]/)
+      .map(term => cleanText(term).toLowerCase())
+      .filter(term => term.length >= 2)
+      .slice(0, 80);
+  }
+
+  function containsAnyKeyword(text, terms) {
+    const source = ` ${cleanText(text).toLowerCase()} `;
+    return terms.some(term => {
+      const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      return new RegExp(`(^|\\W)${escaped}(\\W|$)`, "i").test(source);
+    });
+  }
+
   function primaryDuplicateKey(lead) {
-    if (lead.sourceUrl && lead.sourceUrl !== location.href) return `source:${lead.sourceUrl}`;
-    if (lead.authorProfileUrl) return `profile:${lead.authorProfileUrl}`;
-    if (lead.authorName) return `author:${lead.platform}:${lead.authorName.toLowerCase()}`;
-    return `text:${lead.platform}:${stableHash(lead.postText.slice(0, 600))}`;
+    const person = normalizeIdentity(lead.authorProfileUrl || lead.authorName || "unknown");
+    const text = normalizeLeadText(lead.postText || lead.postSnippet || lead.sourceUrl || "");
+    return `identity:${lead.platform}:${person}:${stableHash(text.slice(0, 1400))}`;
+  }
+
+  function normalizeIdentity(value) {
+    return cleanText(value)
+      .toLowerCase()
+      .replace(/^https?:\/\//, "")
+      .replace(/^www\./, "")
+      .replace(/[?#].*$/, "")
+      .replace(/\/$/, "")
+      .replace(/[^a-z0-9@._/-]+/g, "-")
+      .replace(/-+/g, "-")
+      .slice(0, 180) || "unknown";
+  }
+
+  function normalizeLeadText(value) {
+    return cleanText(value)
+      .toLowerCase()
+      .replace(/https?:\/\/\S+/g, "")
+      .replace(/[^\p{L}\p{N}\s$@._-]/gu, " ")
+      .replace(/\s+/g, " ")
+      .trim();
   }
 
   function stableHash(value) { let hash = 0; for (let i = 0; i < value.length; i++) hash = ((hash << 5) - hash + value.charCodeAt(i)) | 0; return `h_${Math.abs(hash)}`; }
   function truncate(value, n) { return value.length > n ? `${value.slice(0, n - 3)}...` : value; }
   function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
-  function randomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 })();

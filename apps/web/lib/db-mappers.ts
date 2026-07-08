@@ -1,8 +1,20 @@
 import type { Lead } from "./types";
+import { classifyLead } from "./lead-categories";
+import { createLeadIdentityKey } from "./lead-identity";
 
 type LeadDbRow = Record<string, unknown>;
 
 export function leadToDb(lead: Partial<Lead>) {
+  const globalIdentityKey = lead.globalIdentityKey || createLeadIdentityKey(lead);
+  const classification = classifyLead({
+    platform: lead.platform,
+    communityName: lead.communityName,
+    authorName: lead.authorName,
+    postText: lead.postText,
+    postSnippet: lead.postSnippet,
+    matchedKeywords: lead.matchedKeywords
+  });
+
   return {
     id: lead.id,
     workspace_id: lead.workspaceId,
@@ -26,10 +38,15 @@ export function leadToDb(lead: Partial<Lead>) {
     status: lead.status || "New",
     notes: lead.notes || "",
     owner_id: lead.ownerId || null,
+    creator_email: lead.creatorEmail || "",
+    lead_category: lead.leadCategory || classification.category,
+    lead_subcategory: lead.leadSubcategory || classification.subcategory,
+    category_confidence: lead.categoryConfidence || classification.confidence,
     follow_up_date: lead.followUpDate || null,
     outreach_draft: lead.outreachDraft || "",
     follow_up_draft: lead.followUpDraft || "",
-    duplicate_key: lead.duplicateKey || "",
+    duplicate_key: lead.globalIdentityKey || (lead.duplicateKey?.startsWith("identity:") ? lead.duplicateKey : globalIdentityKey),
+    global_identity_key: globalIdentityKey,
     updated_at: new Date().toISOString()
   };
 }
@@ -42,9 +59,14 @@ export function leadPatchToDb(lead: Partial<Lead>) {
   if (lead.status !== undefined) patch.status = lead.status;
   if (lead.notes !== undefined) patch.notes = lead.notes;
   if (lead.ownerId !== undefined) patch.owner_id = lead.ownerId;
+  if (lead.creatorEmail !== undefined) patch.creator_email = lead.creatorEmail;
+  if (lead.leadCategory !== undefined) patch.lead_category = lead.leadCategory;
+  if (lead.leadSubcategory !== undefined) patch.lead_subcategory = lead.leadSubcategory;
+  if (lead.categoryConfidence !== undefined) patch.category_confidence = lead.categoryConfidence;
   if (lead.followUpDate !== undefined) patch.follow_up_date = lead.followUpDate || null;
   if (lead.outreachDraft !== undefined) patch.outreach_draft = lead.outreachDraft;
   if (lead.followUpDraft !== undefined) patch.follow_up_draft = lead.followUpDraft;
+  if (lead.globalIdentityKey !== undefined) patch.global_identity_key = lead.globalIdentityKey;
   if (lead.communityUrl !== undefined) patch.community_url = lead.communityUrl || "";
   if (lead.sourceUrl !== undefined) patch.source_url = lead.sourceUrl || "";
   if (lead.authorProfileUrl !== undefined) patch.author_profile_url = lead.authorProfileUrl || "";
@@ -57,6 +79,23 @@ export function leadPatchToDb(lead: Partial<Lead>) {
 }
 
 export function leadFromDb(row: LeadDbRow): Lead {
+  const identityInput = {
+    platform: String(row.platform || ""),
+    authorName: String(row.author_name || ""),
+    authorProfileUrl: String(row.author_profile_url || ""),
+    postText: String(row.post_text || ""),
+    postSnippet: String(row.post_snippet || ""),
+    sourceUrl: String(row.source_url || "")
+  };
+  const fallbackClassification = classifyLead({
+    platform: identityInput.platform,
+    communityName: String(row.community_name || ""),
+    authorName: identityInput.authorName,
+    postText: identityInput.postText,
+    postSnippet: identityInput.postSnippet,
+    matchedKeywords: Array.isArray(row.matched_keywords) ? row.matched_keywords.map(String) : []
+  });
+
   return {
     id: String(row.id || ""),
     workspaceId: String(row.workspace_id || ""),
@@ -80,10 +119,15 @@ export function leadFromDb(row: LeadDbRow): Lead {
     status: typeof row.status === "string" ? (row.status as Lead["status"]) : "New",
     notes: String(row.notes || ""),
     ownerId: typeof row.owner_id === "string" ? row.owner_id : null,
+    creatorEmail: String(row.creator_email || ""),
+    leadCategory: String(row.lead_category || fallbackClassification.category),
+    leadSubcategory: String(row.lead_subcategory || fallbackClassification.subcategory),
+    categoryConfidence: Number(row.category_confidence || fallbackClassification.confidence),
     followUpDate: typeof row.follow_up_date === "string" ? row.follow_up_date : null,
     outreachDraft: String(row.outreach_draft || ""),
     followUpDraft: String(row.follow_up_draft || ""),
     duplicateKey: String(row.duplicate_key || ""),
+    globalIdentityKey: String(row.global_identity_key || createLeadIdentityKey(identityInput)),
     createdAt: String(row.created_at || ""),
     updatedAt: String(row.updated_at || ""),
     synced: true

@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
+import { AccessDenied } from "@/components/admin/access-denied";
 import { AdminModulePage } from "@/components/admin/admin-module-page";
+import { hasAdminModuleAccess, requireAdminUser } from "@/lib/admin/auth";
 import { getAdminModule } from "@/lib/admin/config";
 import { listAdminRows } from "@/lib/admin/data";
 
@@ -13,6 +15,10 @@ export default async function AdminDynamicModulePage({
   const { module: rawModule } = await params;
   const moduleConfig = getAdminModule(rawModule);
   if (!moduleConfig) notFound();
+  const actor = await requireAdminUser();
+  if (!hasAdminModuleAccess(actor.access, rawModule, "view")) {
+    return <AccessDenied moduleKey={rawModule} permission="view" />;
+  }
 
   const query = await searchParams;
   const url = new URL("https://admin.local");

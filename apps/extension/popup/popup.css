@@ -53,8 +53,17 @@ input { width: 100%; margin-top: 10px; border: 1px solid #253249; border-radius:
 .muted-text { color: #94a3b8; font-size: 11px; font-weight: 800; }
 .platforms { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
 .platforms span { border-radius: 999px; background: #162033; color: #cbd5e1; padding: 5px 8px; font-size: 11px; font-weight: 700; }
-.mini-chart { display: flex; align-items: end; gap: 5px; height: 42px; margin-top: 12px; border-radius: 14px; background: #0b1220; padding: 8px; }
-.mini-chart i { flex: 1; border-radius: 999px 999px 4px 4px; background: linear-gradient(180deg, #38bdf8, #2563eb); }
+.scan-settings { margin-top: 10px; border-top: 1px solid #223047; padding-top: 10px; }
+.scan-settings summary { cursor: pointer; color: #bfdbfe; font-size: 12px; font-weight: 800; }
+.scan-settings summary span { margin-left: 6px; border-radius: 999px; background: #1e293b; color: #93c5fd; padding: 2px 6px; font-size: 10px; }
+.range-row, .check-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; color: #cbd5e1; font-size: 12px; font-weight: 700; }
+.range-row b { color: #fff; }
+#scanDelay { margin-top: 8px; padding: 0; accent-color: #2563eb; }
+.check-row { justify-content: flex-start; }
+.check-row input { width: auto; margin: 0; accent-color: #2563eb; }
+textarea { width: 100%; margin-top: 10px; border: 1px solid #253249; border-radius: 12px; background: #0f172a; color: #fff; padding: 10px; resize: vertical; font: inherit; outline: 0; }
+.hint { margin-top: 8px; font-size: 11px; line-height: 1.45; color: #93a4b8; }
+.hint b { color: #dbeafe; }
 .lead-list { margin-top: 10px; display: grid; gap: 8px; }
 .lead { border: 1px solid #233049; border-radius: 14px; background: #0b1220; padding: 10px; }
 .lead-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }

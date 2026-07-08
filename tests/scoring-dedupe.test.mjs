@@ -48,8 +48,28 @@ function stableHash(value) {
   return `h_${Math.abs(hash)}`;
 }
 
+function identityKeyForLead(lead) {
+  const person = String(lead.authorProfileUrl || lead.authorName || "unknown")
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//, "")
+    .replace(/^www\./, "")
+    .replace(/[?#].*$/, "")
+    .replace(/\/$/, "")
+    .replace(/[^a-z0-9@._/-]+/g, "-")
+    .replace(/-+/g, "-") || "unknown";
+  const text = String(lead.postText || "")
+    .trim()
+    .toLowerCase()
+    .replace(/https?:\/\/\S+/g, "")
+    .replace(/[^\p{L}\p{N}\s$@._-]/gu, " ")
+    .replace(/\s+/g, " ");
+  return `identity:${lead.platform}:${person}:${stableHash(text.slice(0, 1400))}`;
+}
+
 function duplicateKeysForLead(lead) {
   const keys = new Set();
+  keys.add(identityKeyForLead(lead));
   if (lead.sourceUrl) keys.add(`source:${lead.sourceUrl}`);
   if (lead.authorProfileUrl) keys.add(`profile:${lead.authorProfileUrl}`);
   if (lead.authorName && lead.platform) keys.add(`author:${lead.platform}:${lead.authorName.toLowerCase()}`);
@@ -71,7 +91,7 @@ test("negative job-seeker intent lowers score", () => {
   assert.ok(result.negativeSignals.length >= 1);
 });
 
-test("duplicate keys cover source, profile, author, community author, and text hash", () => {
+test("duplicate keys prioritize person plus content identity and still cover source/profile fallbacks", () => {
   const keys = duplicateKeysForLead({
     platform: "reddit",
     communityName: "SaaS",
@@ -80,6 +100,7 @@ test("duplicate keys cover source, profile, author, community author, and text h
     sourceUrl: "https://reddit.com/r/SaaS/comments/1",
     postText: "Need lead generation help"
   });
+  assert.ok(keys.some(key => key.startsWith("identity:reddit:reddit.com/u/founder_user:")));
   assert.ok(keys.some(key => key.startsWith("source:")));
   assert.ok(keys.some(key => key.startsWith("profile:")));
   assert.ok(keys.some(key => key.startsWith("author:reddit:founder_user")));

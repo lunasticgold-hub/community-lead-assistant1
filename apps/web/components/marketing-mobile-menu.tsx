@@ -6,7 +6,17 @@ import { useState } from "react";
 import { marketingNav } from "@/lib/marketing";
 import { Button } from "./ui";
 
-export function MarketingMobileMenu({ loggedIn }: { loggedIn: boolean }) {
+export function MarketingMobileMenu({
+  loggedIn,
+  navItems = marketingNav,
+  ctaLabel = "Start free trial",
+  ctaHref = "/signup"
+}: {
+  loggedIn: boolean;
+  navItems?: ReadonlyArray<{ label: string; href: string }>;
+  ctaLabel?: string;
+  ctaHref?: string;
+}) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -38,9 +48,9 @@ export function MarketingMobileMenu({ loggedIn }: { loggedIn: boolean }) {
               Search docs, features, and guides
             </div>
             <nav className="mt-5 grid gap-1">
-              {marketingNav.map(item => (
+              {navItems.map(item => (
                 <Link
-                  key={item.href}
+                  key={`${item.href}-${item.label}`}
                   href={item.href}
                   onClick={() => setOpen(false)}
                   className="rounded-2xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/10"
@@ -53,8 +63,8 @@ export function MarketingMobileMenu({ loggedIn }: { loggedIn: boolean }) {
               <Link href={loggedIn ? "/dashboard" : "/login"} onClick={() => setOpen(false)}>
                 <Button variant="secondary" className="w-full">{loggedIn ? "Dashboard" : "Login"}</Button>
               </Link>
-              <Link href="/signup" onClick={() => setOpen(false)}>
-                <Button className="w-full">Start free trial</Button>
+              <Link href={ctaHref} onClick={() => setOpen(false)}>
+                <Button className="w-full">{ctaLabel}</Button>
               </Link>
             </div>
           </div>

@@ -1,4 +1,5 @@
 import type { Lead } from "./types";
+import { createLeadIdentityKey } from "./lead-identity";
 
 export function stableHash(value: string): string {
   let hash = 0;
@@ -10,6 +11,7 @@ export function stableHash(value: string): string {
 
 export function duplicateKeysForLead(lead: Pick<Lead, "sourceUrl" | "authorProfileUrl" | "authorName" | "platform" | "communityName" | "postText">): string[] {
   const keys = new Set<string>();
+  keys.add(createLeadIdentityKey(lead));
   if (lead.sourceUrl) keys.add(`source:${lead.sourceUrl}`);
   if (lead.authorProfileUrl) keys.add(`profile:${lead.authorProfileUrl}`);
   if (lead.authorName && lead.platform) keys.add(`author:${lead.platform}:${lead.authorName.toLowerCase()}`);
@@ -21,5 +23,5 @@ export function duplicateKeysForLead(lead: Pick<Lead, "sourceUrl" | "authorProfi
 }
 
 export function primaryDuplicateKey(lead: Pick<Lead, "sourceUrl" | "authorProfileUrl" | "authorName" | "platform" | "communityName" | "postText">): string {
-  return duplicateKeysForLead(lead)[0] || `text:${stableHash(JSON.stringify(lead))}`;
+  return createLeadIdentityKey(lead) || duplicateKeysForLead(lead)[0] || `text:${stableHash(JSON.stringify(lead))}`;
 }

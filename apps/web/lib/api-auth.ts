@@ -1,6 +1,7 @@
 import { fail } from "./api-response";
 import { getAdminEmails } from "./env";
 import { ensureUserWorkspace } from "./provisioning";
+import { checkAccountAccess } from "./security/account-access";
 import { createClient } from "./supabase/server";
 
 export async function requireApiUser() {
@@ -8,6 +9,10 @@ export async function requireApiUser() {
   const { data, error } = await supabase.auth.getUser();
   if (error || !data.user) {
     return { error: fail("Unauthorized", 401) as Response };
+  }
+  const access = await checkAccountAccess(data.user.id);
+  if (!access.allowed) {
+    return { error: fail(access.reason, 403) as Response };
   }
   return { user: data.user, workspace: await ensureUserWorkspace(data.user) };
 }

@@ -43,7 +43,50 @@ export function csvCell(value: unknown): string {
   return `"${String(value ?? "").replaceAll('"', '""')}"`;
 }
 
-export function isMissingTableError(error: { code?: string; message?: string } | null): boolean {
+type AdminDataError = {
+  code?: string | null;
+  message?: string | null;
+  details?: string | null;
+  hint?: string | null;
+};
+
+export function formatAdminDataError(error: unknown, fallback = "Could not load admin records.") {
+  if (error instanceof Error && error.message) return error.message;
+
+  if (error && typeof error === "object") {
+    const adminError = error as AdminDataError;
+    const parts = [adminError.message, adminError.details, adminError.hint, adminError.code]
+      .map(value => String(value || "").trim())
+      .filter(Boolean);
+
+    if (parts.length) return parts.join(" ");
+  }
+
+  return fallback;
+}
+
+export function isMissingTableError(error: AdminDataError | null): boolean {
   if (!error) return false;
-  return error.code === "42P01" || /relation .* does not exist/i.test(error.message || "");
+  const message = `${error.message || ""} ${error.details || ""} ${error.hint || ""}`;
+  return (
+    error.code === "42P01" ||
+    error.code === "PGRST205" ||
+    /relation .* does not exist/i.test(message) ||
+    /table .* does not exist/i.test(message) ||
+    /could not find the table/i.test(message)
+  );
+}
+
+export function isAdminReadSchemaError(error: AdminDataError | null): boolean {
+  if (!error) return false;
+  const message = `${error.message || ""} ${error.details || ""} ${error.hint || ""}`.trim();
+
+  return (
+    isMissingTableError(error) ||
+    error.code === "42703" ||
+    error.code === "PGRST200" ||
+    error.code === "PGRST204" ||
+    /column .* does not exist/i.test(message) ||
+    /schema cache/i.test(message)
+  );
 }

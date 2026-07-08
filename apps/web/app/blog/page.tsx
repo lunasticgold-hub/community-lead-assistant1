@@ -23,9 +23,9 @@ export default async function BlogPage() {
         {!cmsReady ? (
           <Card className="mt-10 dark:border-white/10 dark:bg-white/5">
             <Newspaper className="text-blue-600" />
-            <h2 className="mt-4 text-xl font-semibold text-slate-950 dark:text-white">Blog CMS is ready in code</h2>
+            <h2 className="mt-4 text-xl font-semibold text-slate-950 dark:text-white">Blog publishing is not active yet</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-              Run the admin panel migration to create the blog tables, then publish articles from Admin / Blogs.
+              Publish articles from the Website Editor once your CMS content tables are connected.
             </p>
           </Card>
         ) : null}

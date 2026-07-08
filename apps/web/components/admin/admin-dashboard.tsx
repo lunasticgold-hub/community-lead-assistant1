@@ -27,6 +27,8 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
         <AdminLineChart title="Extension Installs" data={data.charts.extensionInstalls || []} />
         <AdminLineChart title="Traffic" data={data.charts.traffic || []} />
         <AdminLineChart title="AI Usage" data={data.charts.aiUsage || []} />
+        <AdminLineChart title="Customer Revenue Generated" data={data.charts.customerRevenue || []} />
+        <AdminLineChart title="Customer Usage Seconds" data={data.charts.customerUsage || []} />
         <AdminBarChart title="Top Communities" data={data.charts.topCommunities || []} />
         <AdminBarChart title="Top Keywords" data={data.charts.topKeywords || []} />
       </section>

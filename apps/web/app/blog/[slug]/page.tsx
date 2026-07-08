@@ -32,9 +32,9 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
         </Link>
         {!post ? (
           <div className="mt-10 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-soft dark:border-white/10 dark:bg-white/5">
-            <Badge tone="orange">CMS not installed</Badge>
+            <Badge tone="orange">Article unavailable</Badge>
             <h1 className="mt-4 text-3xl font-semibold text-slate-950 dark:text-white">Blog post unavailable</h1>
-            <p className="mt-3 text-slate-600 dark:text-slate-300">Run the admin migration and publish the article from Admin / Blogs.</p>
+            <p className="mt-3 text-slate-600 dark:text-slate-300">Publish this article from the Website Editor, then it will appear here automatically.</p>
           </div>
         ) : (
           <article className="mt-10">

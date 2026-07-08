@@ -18,7 +18,14 @@ export function AdminTable({
   if (loading) return <div className="h-72 animate-pulse rounded-xl bg-white/[0.04]" />;
 
   if (!rows.length) {
-    return <div className="flex h-72 items-center justify-center rounded-xl border border-dashed border-white/10 text-sm text-slate-500">No records found</div>;
+    return (
+      <div className="flex h-72 flex-col items-center justify-center rounded-xl border border-dashed border-white/10 text-center">
+        <div className="text-sm font-semibold text-slate-200">No records in this view</div>
+        <div className="mt-2 max-w-md text-xs leading-5 text-slate-500">
+          Try clearing search filters, refreshing the page, or creating the first record if this module supports creation.
+        </div>
+      </div>
+    );
   }
 
   return (

@@ -21,6 +21,9 @@ export function useAdminTable({
   const [page, setPage] = useState(initialPage);
   const [pageSize] = useState(initialPageSize);
   const [search, setSearch] = useState("");
+  const [uniqueOnly, setUniqueOnly] = useState(false);
+  const [totalBeforeDedupe, setTotalBeforeDedupe] = useState(initialCount);
+  const [duplicatesRemoved, setDuplicatesRemoved] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -28,6 +31,7 @@ export function useAdminTable({
     setLoading(true);
     setError("");
     const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize), search });
+    if (module.slug === "leads" && uniqueOnly) params.set("unique", "1");
     const response = await fetch(`/api/admin/${module.slug}?${params.toString()}`);
     const json = await response.json().catch(() => ({}));
     setLoading(false);
@@ -39,7 +43,9 @@ export function useAdminTable({
 
     setRows(Array.isArray(json.rows) ? json.rows : []);
     setCount(Number(json.count || 0));
-  }, [module.slug, page, pageSize, search]);
+    setTotalBeforeDedupe(Number(json.totalBeforeDedupe || json.count || 0));
+    setDuplicatesRemoved(Number(json.duplicatesRemoved || 0));
+  }, [module.slug, page, pageSize, search, uniqueOnly]);
 
   async function runAction(row: AdminRow, action: AdminAction) {
     if (!row.id) return;
@@ -63,5 +69,5 @@ export function useAdminTable({
     return () => window.clearTimeout(timer);
   }, [refresh]);
 
-  return { rows, count, page, pageSize, search, loading, error, setPage, setSearch, refresh, runAction };
+  return { rows, count, page, pageSize, search, uniqueOnly, totalBeforeDedupe, duplicatesRemoved, loading, error, setPage, setSearch, setUniqueOnly, refresh, runAction };
 }

@@ -1,5 +1,5 @@
 import { fail, ok } from "@/lib/api-response";
-import { requireAdminApiUser } from "@/lib/admin/auth";
+import { hasAdminModuleAccess, requireAdminApiUser } from "@/lib/admin/auth";
 import { getAdminModule, isAdminModuleSlug } from "@/lib/admin/config";
 import { performAdminAction } from "@/lib/admin/data";
 
@@ -14,6 +14,7 @@ export async function POST(request: Request) {
 
   if (!isAdminModuleSlug(moduleSlug) || !getAdminModule(moduleSlug)) return fail("Unknown admin module.", 404);
   if (!action || !id) return fail("Action and id are required.", 400);
+  if (!hasAdminModuleAccess(auth.access, moduleSlug, "edit")) return fail("Forbidden", 403);
 
   try {
     return ok(await performAdminAction({ moduleSlug, action, id, adminUserId: auth.user.id }));

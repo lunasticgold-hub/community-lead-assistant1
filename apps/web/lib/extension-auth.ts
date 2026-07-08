@@ -1,5 +1,6 @@
 import { createHash } from "crypto";
 import { randomBytes } from "crypto";
+import { checkAccountAccess } from "./security/account-access";
 import { getSupabaseAdmin } from "./supabase-admin";
 
 export function hashExtensionToken(token: string): string {
@@ -39,10 +40,21 @@ export async function authenticateExtensionToken(token: string) {
     .eq("token_hash", tokenHash)
     .maybeSingle();
   if (error || !data || data.revoked_at) return null;
+  const { data: userRow } = await supabase
+    .from("users")
+    .select("email")
+    .eq("id", data.user_id)
+    .maybeSingle();
+  const accountAccess = await checkAccountAccess(data.user_id);
+  if (!accountAccess.allowed) {
+    await supabase.from("extension_tokens").update({ revoked_at: new Date().toISOString() }).eq("id", data.id);
+    return null;
+  }
   await supabase.from("extension_tokens").update({ last_used_at: new Date().toISOString() }).eq("id", data.id);
   return {
     workspaceId: data.workspace_id as string,
     userId: data.user_id as string,
+    userEmail: String(userRow?.email || ""),
     bootstrap: null
   };
 }

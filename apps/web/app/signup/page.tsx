@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { MarketingShellView } from "@/components/marketing-shell-view";
+import { PasswordInput } from "@/components/password-input";
 import { Button, Card, Field, TextInput } from "@/components/ui";
 import { createClient } from "@/lib/supabase/client";
 
@@ -102,7 +103,7 @@ export default function SignupPage() {
             <form className="space-y-4" onSubmit={handleEmailSignup}>
               <Field label="Name"><TextInput value={name} onChange={event => setName(event.target.value)} placeholder="Ava Founder" autoComplete="name" /></Field>
               <Field label="Email"><TextInput value={email} onChange={event => setEmail(event.target.value)} placeholder="you@example.com" autoComplete="email" /></Field>
-              <Field label="Password"><TextInput value={password} onChange={event => setPassword(event.target.value)} type="password" placeholder="Create a password" autoComplete="new-password" /></Field>
+              <Field label="Password"><PasswordInput value={password} onChange={event => setPassword(event.target.value)} placeholder="Create a password" autoComplete="new-password" /></Field>
               {error ? <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
               {notice ? <p className="rounded-xl bg-blue-50 p-3 text-sm text-blue-700">{notice}</p> : null}
               <Button type="submit" className="w-full" disabled={loading !== null}>{loading === "email" ? "Creating account..." : "Continue"}</Button>

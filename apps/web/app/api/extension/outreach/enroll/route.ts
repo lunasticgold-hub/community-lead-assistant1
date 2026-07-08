@@ -2,6 +2,10 @@ import { fail, ok } from "@/lib/api-response";
 import { leadToDb } from "@/lib/db-mappers";
 import { defaultSequenceSteps } from "@/lib/outreach";
 import { bearerToken, authenticateExtensionToken } from "@/lib/extension-auth";
+<<<<<<< HEAD
+=======
+import { normalizeLeadPerson } from "@/lib/lead-identity";
+>>>>>>> 5584f3d (Prepare production deployment)
 import { createSequence, enrollLeadInSequence } from "@/lib/outreach";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import type { Lead } from "@/lib/types";
@@ -24,6 +28,16 @@ export async function POST(request: Request) {
   const supabase = getSupabaseAdmin();
   if (!supabase) return fail("Server Supabase admin client is not configured.", 500);
 
+<<<<<<< HEAD
+=======
+  const blocked = await isFraudBlocked(supabase, {
+    platform,
+    authorName,
+    authorProfileUrl: String(profile.authorProfileUrl || profile.sourceUrl || "")
+  });
+  if (blocked) return fail("This profile was marked as fraud and cannot be added to outreach.", 409);
+
+>>>>>>> 5584f3d (Prepare production deployment)
   const leadPayload: Partial<Lead> = {
     workspaceId: auth.workspaceId,
     campaignId: typeof profile.campaignId === "string" ? profile.campaignId : "",
@@ -94,3 +108,42 @@ export async function POST(request: Request) {
     return fail(error instanceof Error ? error.message : "Could not add profile to sequence.", 500);
   }
 }
+<<<<<<< HEAD
+=======
+
+async function isFraudBlocked(
+  supabase: NonNullable<ReturnType<typeof getSupabaseAdmin>>,
+  input: { platform: string; authorName: string; authorProfileUrl: string }
+) {
+  const platform = input.platform.toLowerCase();
+  const authorKey = normalizeLeadPerson(input.authorName);
+  const profileKey = normalizeLeadPerson(input.authorProfileUrl);
+  const checks = [];
+
+  if (authorKey) {
+    checks.push(
+      supabase
+        .from("lead_fraud_profiles")
+        .select("id")
+        .eq("platform", platform)
+        .eq("normalized_author_key", authorKey)
+        .limit(1)
+    );
+  }
+
+  if (profileKey) {
+    checks.push(
+      supabase
+        .from("lead_fraud_profiles")
+        .select("id")
+        .eq("platform", platform)
+        .eq("normalized_profile_key", profileKey)
+        .limit(1)
+    );
+  }
+
+  if (!checks.length) return false;
+  const results = await Promise.all(checks);
+  return results.some(result => !result.error && Boolean(result.data?.length));
+}
+>>>>>>> 5584f3d (Prepare production deployment)

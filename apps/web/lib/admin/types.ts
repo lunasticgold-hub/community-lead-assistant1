@@ -3,21 +3,15 @@ export type AdminModuleSlug =
   | "users"
   | "workspaces"
   | "campaigns"
-  | "outreach-sequences"
+  | "customer-success"
   | "outreach-queue"
-  | "lead-sequences"
   | "leads"
   | "knowledge-base"
-  | "blogs"
-  | "seo"
   | "marketing"
   | "billing"
-  | "ai-monitoring"
   | "extension"
-  | "extension-events"
   | "outreach-activity"
   | "system-logs"
-  | "settings"
   | "profile";
 
 export type AdminFieldType =
@@ -100,4 +94,7 @@ export type AdminListResult = {
   page: number;
   pageSize: number;
   tableMissing?: boolean;
+  totalBeforeDedupe?: number;
+  uniqueCount?: number;
+  duplicatesRemoved?: number;
 };

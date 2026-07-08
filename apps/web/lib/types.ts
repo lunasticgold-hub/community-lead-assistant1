@@ -24,7 +24,8 @@ export type LeadStatus =
   | "Nurture"
   | "Not Relevant"
   | "Converted"
-  | "Ignored";
+  | "Ignored"
+  | "Fraud";
 
 export type KnowledgeBase = {
   myService: string;
@@ -107,10 +108,15 @@ export type Lead = {
   status: LeadStatus;
   notes: string;
   ownerId: string | null;
+  creatorEmail: string;
+  leadCategory: string;
+  leadSubcategory: string;
+  categoryConfidence: number;
   followUpDate: string | null;
   outreachDraft: string;
   followUpDraft: string;
   duplicateKey: string;
+  globalIdentityKey: string;
   createdAt: string;
   updatedAt: string;
   synced?: boolean;

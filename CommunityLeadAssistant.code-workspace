@@ -9,6 +9,26 @@
       "path": "apps/web"
     },
     {
+      "name": "CMS Admin Pages",
+      "path": "apps/web/app/admin/cms"
+    },
+    {
+      "name": "CMS API Routes",
+      "path": "apps/web/app/api/cms"
+    },
+    {
+      "name": "CMS Components",
+      "path": "apps/web/components/cms"
+    },
+    {
+      "name": "CMS Library",
+      "path": "apps/web/lib/cms"
+    },
+    {
+      "name": "CMS Hooks",
+      "path": "apps/web/hooks/cms"
+    },
+    {
       "name": "Chrome Extension",
       "path": "apps/extension"
     },

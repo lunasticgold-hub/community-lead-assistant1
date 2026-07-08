@@ -1,8 +1,12 @@
 node_modules/
 .next/
+.turbo/
+.vercel/
 out/
 dist/
 build/
+coverage/
+*.tsbuildinfo
 
 .env
 .env.local
@@ -13,6 +17,8 @@ build/
 dev-server.log
 *.log
 
+/CommunityLeadAssistant/
+/CommunityLeadAssistant.zip
 /community-lead-assistant-extension.zip
 /community-lead-assistant-extension-unzipped/
 /community-lead-assistant-complete-repository.zip
@@ -20,7 +26,16 @@ dev-server.log
 /community-lead-assistant-auth-updated/
 /community-lead-assistant-corrected/
 /community-lead-assistant-corrected-repository.zip
+/extension-download-package/
+/outputs/
+/research/
+/clutch_scraper_project/
+/tmp/
+/New folder/
+/popup/
+/*.lnk
 !apps/web/public/downloads/community-lead-assistant-extension.zip
+!apps/web/public/downloads/CommunityLeadAssistant.zip
 
 .DS_Store
 Thumbs.db

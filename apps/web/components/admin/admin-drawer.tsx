@@ -60,7 +60,17 @@ export function AdminDrawer({
           {module.columns.filter(column => column.editable).map(column => (
             <label key={column.key} className="block">
               <span className="text-xs text-slate-400">{column.label}</span>
-              {column.type === "textarea" || column.type === "markdown" || column.type === "json" ? (
+              {column.type === "boolean" ? (
+                <label className="mt-2 flex items-center gap-2 rounded-lg border border-white/10 bg-slate-900 px-3 py-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(form[column.key])}
+                    onChange={event => setForm(current => ({ ...current, [column.key]: event.target.checked }))}
+                    className="h-4 w-4 accent-blue-500"
+                  />
+                  Enabled
+                </label>
+              ) : column.type === "textarea" || column.type === "markdown" || column.type === "json" ? (
                 <textarea
                   value={formatInputValue(form[column.key])}
                   onChange={event => setForm(current => ({ ...current, [column.key]: event.target.value }))}
@@ -68,6 +78,7 @@ export function AdminDrawer({
                 />
               ) : (
                 <input
+                  type={inputType(column.type)}
                   value={formatInputValue(form[column.key])}
                   onChange={event => setForm(current => ({ ...current, [column.key]: event.target.value }))}
                   className="mt-1 min-h-10 w-full rounded-lg border border-white/10 bg-slate-900 px-3 text-sm outline-none focus:border-blue-500"
@@ -91,4 +102,13 @@ export function AdminDrawer({
 function formatInputValue(value: unknown) {
   if (value && typeof value === "object") return JSON.stringify(value, null, 2);
   return String(value ?? "");
+}
+
+function inputType(type?: string) {
+  if (type === "number") return "number";
+  if (type === "date") return "date";
+  if (type === "datetime") return "datetime-local";
+  if (type === "email") return "email";
+  if (type === "url") return "url";
+  return "text";
 }

@@ -6,6 +6,7 @@ const els = {
   campaignName: $("campaignName"), modePill: $("modePill"), reviewMode: $("reviewMode"), scanOnlyMode: $("scanOnlyMode"), startBtn: $("startBtn"),
   scanVisibleBtn: $("scanVisibleBtn"), stopBtn: $("stopBtn"), runStatus: $("runStatus"), activity: $("activity"), progressBar: $("progressBar"),
   scanned: $("scanned"), leadsFound: $("leadsFound"), hotLeads: $("hotLeads"), savedToday: $("savedToday"), reviewQueueCount: $("reviewQueueCount"), leadList: $("leadList"),
+  scanDelay: $("scanDelay"), delayValue: $("delayValue"), keywordGateEnabled: $("keywordGateEnabled"), keywordGateTerms: $("keywordGateTerms"),
   syncBtn: $("syncBtn"), openDashboard: $("openDashboard"), openReviewQueue: $("openReviewQueue"), openSettings: $("openSettings"), exportCsv: $("exportCsv"), toast: $("toast"),
   drawer: $("drawer"), closeDrawer: $("closeDrawer"), drawerAuthor: $("drawerAuthor"), drawerMeta: $("drawerMeta"), drawerSnippet: $("drawerSnippet"),
   drawerDraft: $("drawerDraft"), copyDrawer: $("copyDrawer"), sourceDrawer: $("sourceDrawer"), outreachDrawer: $("outreachDrawer"), contactedDrawer: $("contactedDrawer"),
@@ -30,6 +31,9 @@ function bind() {
   els.websiteSessionBtn.onclick = connectWebsiteSession;
   els.reviewMode.onclick = () => setMode("review_leads");
   els.scanOnlyMode.onclick = () => setMode("scan_only");
+  els.scanDelay.oninput = saveScanSettings;
+  els.keywordGateEnabled.onchange = saveScanSettings;
+  els.keywordGateTerms.oninput = debounce(saveScanSettings, 250);
   els.startBtn.onclick = () => chrome.runtime.sendMessage({ type: "START_SCAN", mode });
   els.scanVisibleBtn.onclick = () => chrome.runtime.sendMessage({ type: "SCAN_VISIBLE", mode });
   els.stopBtn.onclick = () => chrome.runtime.sendMessage({ type: "STOP_SCAN" });
@@ -113,6 +117,11 @@ async function detectPage() {
 async function refresh() {
   const state = await chrome.storage.local.get(null);
   const loggedIn = Boolean(state.extensionToken);
+  const delay = Number(state.scanDelaySeconds || 10);
+  els.scanDelay.value = String(Math.min(30, Math.max(10, delay)));
+  els.delayValue.textContent = `${els.scanDelay.value}s`;
+  els.keywordGateEnabled.checked = Boolean(state.keywordGateEnabled);
+  els.keywordGateTerms.value = state.keywordGateTerms || "";
   els.apiBaseUrl.value = state.apiBaseUrl || "https://communityleadassistant.com";
   els.loggedOut.classList.toggle("hidden", loggedIn);
   els.app.classList.toggle("hidden", !loggedIn);
@@ -145,6 +154,24 @@ async function refresh() {
   renderLeads(state.recentLeads || [], state.scanMode || mode);
 }
 
+async function saveScanSettings() {
+  const scanDelaySeconds = Math.min(30, Math.max(10, Number(els.scanDelay.value || 10)));
+  els.delayValue.textContent = `${scanDelaySeconds}s`;
+  await chrome.storage.local.set({
+    scanDelaySeconds,
+    keywordGateEnabled: Boolean(els.keywordGateEnabled.checked),
+    keywordGateTerms: els.keywordGateTerms.value
+  });
+}
+
+function debounce(fn, wait) {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => fn(...args), wait);
+  };
+}
+
 function setMode(nextMode) {
   mode = nextMode;
   els.reviewMode.classList.toggle("active", mode === "review_leads");
@@ -155,30 +182,65 @@ function setMode(nextMode) {
 }
 
 function renderLeads(leads, currentMode) {
-  els.leadList.innerHTML = "";
+  els.leadList.replaceChildren();
   if (!leads.length) {
-    els.leadList.innerHTML = `<div class="lead"><p>No leads yet. Start with Scan Visible on a supported community page.</p></div>`;
+    const empty = document.createElement("div");
+    empty.className = "lead";
+    const message = document.createElement("p");
+    message.textContent = "No leads yet. Start with Scan Visible on a supported community page.";
+    empty.appendChild(message);
+    els.leadList.appendChild(empty);
     return;
   }
   leads.slice(0, 5).forEach(lead => {
     const row = document.createElement("div");
     row.className = "lead";
-    const chips = (lead.matchedKeywords || []).slice(0, 3).map(signal => `<span class="chip">${escapeHtml(signal)}</span>`).join("");
-    const scoreClass = lead.leadTemperature === "Hot" ? "score hot" : "score";
-    row.innerHTML = `
-      <div class="lead-top"><strong>${escapeHtml(lead.authorName || "Unknown")}</strong><span class="${scoreClass}">${escapeHtml(lead.leadTemperature)} ${lead.leadScore}</span></div>
-      <p>${escapeHtml(lead.postSnippet || "")}</p>
-      <div class="chips">${chips}</div>
-      <div class="lead-actions">
-        <button class="secondary" data-view>View</button>
-        <button class="secondary" data-source>Source</button>
-        ${currentMode === "scan_only" ? "" : "<button data-copy>Copy Draft</button>"}
-      </div>`;
-    row.querySelector("[data-view]").onclick = () => openDrawer(lead, currentMode);
-    row.querySelector("[data-source]").onclick = () => lead.sourceUrl && chrome.tabs.create({ url: lead.sourceUrl });
-    row.querySelector("[data-copy]")?.addEventListener("click", () => copyLeadDraft(lead));
+
+    const top = document.createElement("div");
+    top.className = "lead-top";
+    const author = document.createElement("strong");
+    author.textContent = lead.authorName || "Unknown";
+    const score = document.createElement("span");
+    score.className = lead.leadTemperature === "Hot" ? "score hot" : "score";
+    score.textContent = `${lead.leadTemperature || "Review"} ${lead.leadScore || 0}`;
+    top.append(author, score);
+
+    const snippet = document.createElement("p");
+    snippet.textContent = lead.postSnippet || "";
+
+    const chips = document.createElement("div");
+    chips.className = "chips";
+    (lead.matchedKeywords || []).slice(0, 3).forEach(signal => {
+      const chip = document.createElement("span");
+      chip.className = "chip";
+      chip.textContent = String(signal || "");
+      chips.appendChild(chip);
+    });
+
+    const actions = document.createElement("div");
+    actions.className = "lead-actions";
+    const viewButton = leadButton("View", "secondary");
+    viewButton.onclick = () => openDrawer(lead, currentMode);
+    const sourceButton = leadButton("Source", "secondary");
+    sourceButton.onclick = () => lead.sourceUrl && chrome.tabs.create({ url: lead.sourceUrl });
+    actions.append(viewButton, sourceButton);
+    if (currentMode !== "scan_only") {
+      const copyButton = leadButton("Copy Draft", "");
+      copyButton.onclick = () => copyLeadDraft(lead);
+      actions.appendChild(copyButton);
+    }
+
+    row.append(top, snippet, chips, actions);
     els.leadList.appendChild(row);
   });
+}
+
+function leadButton(label, className) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.textContent = label;
+  if (className) button.className = className;
+  return button;
 }
 
 function openDrawer(lead, currentMode) {
@@ -230,8 +292,4 @@ function toast(message) {
   els.toast.textContent = message;
   els.toast.classList.remove("hidden");
   setTimeout(() => els.toast.classList.add("hidden"), 2400);
-}
-
-function escapeHtml(value) {
-  return String(value || "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#039;" }[char]));
 }

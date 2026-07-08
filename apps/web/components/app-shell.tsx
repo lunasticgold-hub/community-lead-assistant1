@@ -9,6 +9,7 @@ const nav = [
   ["Sequences", "/sequences", GitBranch],
   ["Review Queue", "/review-queue", Send],
   ["Human Inbox", "/inbox", Inbox],
+  ["Success", "/success", BarChart3],
   ["Knowledge Base", "/knowledge-base", BookOpen],
   ["Keywords", "/keywords", KeyRound],
   ["Templates", "/templates", FileText],

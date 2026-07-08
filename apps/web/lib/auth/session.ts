@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import { getAdminEmails } from "../env";
 import { ensureUserWorkspace } from "../provisioning";
+import { checkAccountAccess } from "../security/account-access";
 import { createClient } from "../supabase/server";
 
 export async function getCurrentUser(): Promise<User | null> {
@@ -19,6 +20,8 @@ export async function getCurrentUser(): Promise<User | null> {
 export async function requireCurrentUser(): Promise<User> {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+  const access = await checkAccountAccess(user.id);
+  if (!access.allowed) redirect(`/login?error=${encodeURIComponent(access.reason)}`);
   return user;
 }
 

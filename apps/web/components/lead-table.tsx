@@ -17,8 +17,11 @@ export function LeadTable({ leads }: { leads: Lead[] }) {
   return (
     <Card className="overflow-hidden p-0">
       <div className="border-b border-slate-200 p-4">
+        <p className="mb-3 max-w-3xl text-xs text-slate-500">
+          Category is auto-classified from the post text, source community, and matched keywords so users can quickly see what service area the lead belongs to.
+        </p>
         <div className="flex flex-wrap gap-2">
-          {["Platform", "Score range", "Temperature", "Status", "Date range", "Keyword", "Owner", "Community"].map(filter => (
+          {["Platform", "Category", "Subcategory", "Score range", "Temperature", "Status", "Date range", "Keyword", "Creator email", "Owner", "Community"].map(filter => (
             <Badge key={filter}>{filter}</Badge>
           ))}
         </div>
@@ -27,7 +30,7 @@ export function LeadTable({ leads }: { leads: Lead[] }) {
         <table className="w-full text-left text-sm">
           <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
             <tr>
-              {["Lead", "Platform", "Community", "Score", "Signals", "Status", "Owner", "Created", "Follow-up", "Actions"].map(head => (
+              {["Lead", "Created By", "Category", "Platform", "Community", "Score", "Signals", "Status", "Owner", "Created", "Follow-up", "Actions"].map(head => (
                 <th key={head} className="px-4 py-3">{head}</th>
               ))}
             </tr>
@@ -46,6 +49,16 @@ export function LeadTable({ leads }: { leads: Lead[] }) {
                     <div className="mt-2 flex flex-wrap gap-3 text-xs font-semibold">
                       {sourceUrl ? <Link className="text-blue-700 hover:text-blue-900" href={sourceUrl} target="_blank">Open post</Link> : null}
                       {profileUrl ? <Link className="text-slate-600 hover:text-slate-950" href={profileUrl} target="_blank">Profile</Link> : null}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="max-w-48 truncate text-sm font-medium text-slate-800">{lead.creatorEmail || "Unknown"}</div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="min-w-48">
+                      <Badge tone="blue">{lead.leadCategory}</Badge>
+                      <div className="mt-1 text-xs text-slate-500">{lead.leadSubcategory}</div>
+                      <div className="mt-1 text-[11px] text-slate-400">{lead.categoryConfidence}% confidence</div>
                     </div>
                   </td>
                   <td className="px-4 py-3">

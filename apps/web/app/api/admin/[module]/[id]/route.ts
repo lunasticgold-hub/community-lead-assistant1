@@ -1,5 +1,5 @@
 import { fail, ok } from "@/lib/api-response";
-import { requireAdminApiUser } from "@/lib/admin/auth";
+import { hasAdminModuleAccess, requireAdminApiUser } from "@/lib/admin/auth";
 import { getAdminModule } from "@/lib/admin/config";
 import { deleteAdminRow, updateAdminRow } from "@/lib/admin/data";
 
@@ -12,6 +12,7 @@ export async function PATCH(request: Request, context: Context) {
   const { module: rawModule, id } = await context.params;
   const moduleConfig = getAdminModule(rawModule);
   if (!moduleConfig) return fail("Unknown admin module.", 404);
+  if (!hasAdminModuleAccess(auth.access, rawModule, "edit")) return fail("Forbidden", 403);
 
   const body = await request.json().catch(() => ({}));
 
@@ -29,6 +30,7 @@ export async function DELETE(_request: Request, context: Context) {
   const { module: rawModule, id } = await context.params;
   const moduleConfig = getAdminModule(rawModule);
   if (!moduleConfig) return fail("Unknown admin module.", 404);
+  if (!hasAdminModuleAccess(auth.access, rawModule, "delete")) return fail("Forbidden", 403);
 
   try {
     return ok(await deleteAdminRow(moduleConfig, id));

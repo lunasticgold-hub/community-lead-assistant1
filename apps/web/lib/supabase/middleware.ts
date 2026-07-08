@@ -25,12 +25,29 @@ const protectedPrefixes = [
 
 const authPages = ["/login", "/signup"];
 
+function withSecurityHeaders(response: NextResponse) {
+  response.headers.set("x-content-type-options", "nosniff");
+  response.headers.set("x-frame-options", "DENY");
+  response.headers.set("referrer-policy", "strict-origin-when-cross-origin");
+  response.headers.set("permissions-policy", "camera=(), microphone=(), geolocation=(), payment=()");
+  return response;
+}
+
 function isProtectedPath(pathname: string) {
   return protectedPrefixes.some(prefix => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 
 function isAuthPage(pathname: string) {
   return authPages.includes(pathname);
+}
+
+function getSafeNextUrl(request: NextRequest) {
+  const next = request.nextUrl.searchParams.get("next");
+  if (!next || !next.startsWith("/") || next.startsWith("//")) {
+    return new URL("/dashboard", request.nextUrl.origin);
+  }
+
+  return new URL(next, request.nextUrl.origin);
 }
 
 export async function updateSession(request: NextRequest) {
@@ -45,9 +62,9 @@ export async function updateSession(request: NextRequest) {
       url.pathname = "/login";
       url.searchParams.set("error", "Supabase is not configured.");
       url.searchParams.set("next", request.nextUrl.pathname);
-      return NextResponse.redirect(url);
+      return withSecurityHeaders(NextResponse.redirect(url));
     }
-    return response;
+    return withSecurityHeaders(response);
   }
 
   const supabase = createServerClient(env.url, env.anonKey, {
@@ -73,15 +90,12 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", `${pathname}${request.nextUrl.search}`);
-    return NextResponse.redirect(url);
+    return withSecurityHeaders(NextResponse.redirect(url));
   }
 
   if (user && isAuthPage(pathname)) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
-    url.search = "";
-    return NextResponse.redirect(url);
+    return withSecurityHeaders(NextResponse.redirect(getSafeNextUrl(request)));
   }
 
-  return response;
+  return withSecurityHeaders(response);
 }

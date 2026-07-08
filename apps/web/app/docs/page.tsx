@@ -38,7 +38,7 @@ export default function DocsPage() {
             <Database className="text-blue-600" />
             <div>
               <h2 className="font-semibold text-slate-950 dark:text-white">Need the admin database tables?</h2>
-              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">Run the Supabase migrations included in the repository, including the admin panel migration.</p>
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">Use the Supabase setup files included in the repository to connect the live admin, CMS, and analytics tables.</p>
             </div>
             <Link href="/download-extension" className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600">
               Install extension <ArrowRight size={16} />

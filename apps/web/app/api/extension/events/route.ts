@@ -1,5 +1,6 @@
 import { fail, ok } from "@/lib/api-response";
 import { bearerToken, authenticateExtensionToken } from "@/lib/extension-auth";
+import { recordCustomerActivity } from "@/lib/customer-success/data";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 type ExtensionEventPayload = {
@@ -28,5 +29,13 @@ export async function POST(request: Request) {
   if (!supabase) return ok({ synced: rows.length, localOnly: true });
   const { error } = await supabase.from("usage_events").insert(rows);
   if (error) return fail(error.message, 500);
+  await Promise.all(rows.map(row => recordCustomerActivity({
+    workspaceId: auth.workspaceId,
+    userId: auth.userId,
+    eventType: row.event_type,
+    moduleKey: row.platform || "extension",
+    eventLabel: String(row.metadata?.label || row.event_type),
+    metadata: row.metadata
+  })));
   return ok({ synced: rows.length });
 }

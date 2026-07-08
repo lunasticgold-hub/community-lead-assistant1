@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { fail, ok } from "@/lib/api-response";
 import { ensureUserWorkspace } from "@/lib/provisioning";
+import { checkAccountAccess } from "@/lib/security/account-access";
 import { getSupabaseBrowserEnv } from "@/lib/supabase/env";
 import { createExtensionSessionToken } from "@/lib/extension-auth";
 import { getExtensionBootstrap } from "@/lib/extension-bootstrap";
@@ -17,6 +18,8 @@ export async function POST(request: Request) {
     const supabase = createClient(url, anonKey, { auth: { persistSession: false } });
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error || !data.user) return fail(error?.message || "Invalid email or password.", 401);
+    const accountAccess = await checkAccountAccess(data.user.id);
+    if (!accountAccess.allowed) return fail(accountAccess.reason, 403);
 
     const workspace = await ensureUserWorkspace(data.user);
     const session = await createExtensionSessionToken({

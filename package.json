@@ -2,6 +2,9 @@
   "name": "community-lead-assistant",
   "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": ">=20.11.0"
+  },
   "scripts": {
     "dev": "npm --workspace apps/web run dev",
     "build": "npm --workspace apps/web run build",

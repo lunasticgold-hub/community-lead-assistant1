@@ -484,7 +484,7 @@ export const marketingPages: Record<MarketingPageSlug, MarketingPage> = {
     sections: [
       {
         title: "Current status model",
-        body: "The admin panel tracks API requests, sync failures, extension errors, AI failures, and system logs once the admin migration is installed.",
+        body: "The admin panel tracks API requests, sync failures, extension errors, AI failures, and system logs from connected production services.",
         points: ["Dashboard", "Extension sync", "AI drafting", "Billing routes"]
       }
     ]

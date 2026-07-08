@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
+import { PasswordInput } from "@/components/password-input";
 import { Button, Card, Field, TextInput } from "@/components/ui";
 import { createClient } from "@/lib/supabase/client";
 
@@ -51,10 +52,12 @@ export function LoginForm() {
     setLoading("google");
     try {
       const supabase = createClient();
+      const callbackUrl = new URL("/auth/callback", window.location.origin);
+      callbackUrl.searchParams.set("next", next);
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`
+          redirectTo: callbackUrl.toString()
         }
       });
       if (oauthError) throw oauthError;
@@ -102,7 +105,7 @@ export function LoginForm() {
         </div>
         <form className="space-y-4" onSubmit={handleEmailLogin}>
           <Field label="Email"><TextInput value={email} onChange={event => setEmail(event.target.value)} placeholder="you@example.com" autoComplete="email" /></Field>
-          <Field label="Password"><TextInput value={password} onChange={event => setPassword(event.target.value)} type="password" placeholder="Password" autoComplete="current-password" /></Field>
+          <Field label="Password"><PasswordInput value={password} onChange={event => setPassword(event.target.value)} placeholder="Password" autoComplete="current-password" /></Field>
           {error ? <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{authMessage(error)}</p> : null}
           <Button type="submit" className="w-full" disabled={loading !== null}>{loading === "email" ? "Logging in..." : "Log in"}</Button>
         </form>

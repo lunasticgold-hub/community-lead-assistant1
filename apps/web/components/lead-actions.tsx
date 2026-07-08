@@ -20,6 +20,17 @@ async function updateLead(id: string, patch: Record<string, unknown>) {
   return data;
 }
 
+async function markLeadFraud(id: string) {
+  const response = await fetch(`/api/leads/${id}/fraud`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ reason: "Marked as fraud from lead dashboard" })
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || data.ok === false) throw new Error(data.error || "Could not mark lead as fraud.");
+  return data;
+}
+
 export function LeadActions({ lead, compact = false }: LeadActionsProps) {
   const [message, setMessage] = useState("");
   const [followUpDate, setFollowUpDate] = useState(lead.followUpDate || "");
@@ -93,6 +104,18 @@ export function LeadActions({ lead, compact = false }: LeadActionsProps) {
           onClick={() => run("Marked contacted", async () => updateLead(lead.id, { status: "Contacted Manually" }))}
         >
           Mark contacted
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          disabled={Boolean(loading)}
+          onClick={() => run("Fraud blocked", async () => {
+            if (!window.confirm("Mark this lead source as fraud? Future leads from this person will be blocked.")) return;
+            await markLeadFraud(lead.id);
+            window.location.reload();
+          })}
+        >
+          Mark fraud
         </Button>
       </div>
 

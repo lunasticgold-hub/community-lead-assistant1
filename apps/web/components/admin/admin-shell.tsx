@@ -4,8 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { sidebarItems } from "@/lib/admin/config";
+import type { AdminAccess } from "@/lib/admin/iam-types";
 
-export function AdminShell({ children, email }: { children: ReactNode; email: string }) {
+export function AdminShell({ children, email, access }: { children: ReactNode; email: string; access: AdminAccess }) {
   const pathname = usePathname();
 
   return (
@@ -17,7 +18,7 @@ export function AdminShell({ children, email }: { children: ReactNode; email: st
         </div>
 
         <nav className="mt-6 space-y-1">
-          {sidebarItems.map(item => {
+          {sidebarItems.filter(item => canView(access, moduleKeyFromHref(item.href))).map(item => {
             const active = pathname === item.href;
             return (
               <Link
@@ -39,7 +40,7 @@ export function AdminShell({ children, email }: { children: ReactNode; email: st
         <header className="sticky top-0 z-20 flex min-h-16 items-center justify-between border-b border-white/10 bg-slate-950/85 px-5 backdrop-blur">
           <div>
             <div className="text-sm font-medium">Admin Panel</div>
-            <div className="text-xs text-slate-400">Production operations dashboard</div>
+            <div className="text-xs text-slate-400">{access.roleName || "Production operations dashboard"}</div>
           </div>
           <div className="rounded-full border border-white/10 px-3 py-1 text-xs text-slate-300">{email}</div>
         </header>
@@ -48,4 +49,17 @@ export function AdminShell({ children, email }: { children: ReactNode; email: st
       </div>
     </div>
   );
+}
+
+function moduleKeyFromHref(href: string) {
+  if (href === "/admin") return "dashboard";
+  if (href === "/admin/cms/website-editor") return "website-editor";
+  if (href === "/admin/cms") return "cms";
+  if (href === "/admin/qa") return "qa";
+  return href.split("/").filter(Boolean).pop() || "dashboard";
+}
+
+function canView(access: AdminAccess, moduleKey: string) {
+  if (access.isSuperAdmin || access.modules["*"]?.fullAccess) return true;
+  return Boolean(access.modules[moduleKey]?.view || access.modules[moduleKey]?.fullAccess);
 }

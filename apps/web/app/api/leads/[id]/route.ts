@@ -1,5 +1,6 @@
 import { fail, ok } from "@/lib/api-response";
 import { requireApiUser } from "@/lib/api-auth";
+import { addCreatorEmailsToLeadRows } from "@/lib/data/lead-enrichment";
 import { leadFromDb, leadPatchToDb } from "@/lib/db-mappers";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
@@ -13,7 +14,8 @@ export async function GET(_request: Request, context: LeadRouteContext) {
   if (!supabase) return fail("Server Supabase admin client is not configured.", 500);
   const { data, error } = await supabase.from("leads").select("*").eq("workspace_id", auth.workspace.id).eq("id", id).single();
   if (error) return fail(error.message, 404);
-  return ok({ lead: leadFromDb(data) });
+  const [enrichedRow] = await addCreatorEmailsToLeadRows(supabase, [data as Record<string, unknown>]);
+  return ok({ lead: leadFromDb(enrichedRow) });
 }
 
 export async function PATCH(request: Request, context: LeadRouteContext) {
@@ -25,5 +27,6 @@ export async function PATCH(request: Request, context: LeadRouteContext) {
   if (!supabase) return fail("Server Supabase admin client is not configured.", 500);
   const { data, error } = await supabase.from("leads").update(leadPatchToDb(body)).eq("workspace_id", auth.workspace.id).eq("id", id).select("*").single();
   if (error) return fail(error.message, 500);
-  return ok({ lead: leadFromDb(data) });
+  const [enrichedRow] = await addCreatorEmailsToLeadRows(supabase, [data as Record<string, unknown>]);
+  return ok({ lead: leadFromDb(enrichedRow) });
 }

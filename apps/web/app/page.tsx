@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import {
   ArrowRight,
   BarChart3,
@@ -17,6 +18,7 @@ import {
 } from "lucide-react";
 import { MarketingShell } from "@/components/marketing-shell";
 import { Badge, Button, Card } from "@/components/ui";
+import { getWebsiteEditorContent } from "@/lib/cms/website-editor";
 import { homepageSections, supportedPlatforms } from "@/lib/marketing";
 import { planLimits } from "@/lib/defaults";
 
@@ -32,27 +34,56 @@ const faq = [
   ["Can agencies use it?", "Yes. Campaigns, workspace sync, CSV export, admin analytics, and future billing tiers are designed for agencies and growth teams."]
 ] as const;
 
-export default function LandingPage() {
+type LandingPageProps = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
+
+function firstParam(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function safeNext(value: string | undefined) {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) return "/dashboard";
+  return value;
+}
+
+function recoverOAuthCode(value: string) {
+  const pathStart = value.search(/\/(?:admin|dashboard|leads|campaigns|sequences|review-queue|inbox|analytics|platforms)\b/);
+  if (pathStart === -1) return { code: value, next: "/dashboard" };
+  return { code: value.slice(0, pathStart), next: value.slice(pathStart) };
+}
+
+export default async function LandingPage({ searchParams }: LandingPageProps) {
+  const params = await searchParams;
+  const rawCode = firstParam(params?.code);
+  if (rawCode) {
+    const recovered = recoverOAuthCode(rawCode);
+    const next = safeNext(firstParam(params?.next) || recovered.next);
+    redirect(`/auth/callback?code=${encodeURIComponent(recovered.code)}&next=${encodeURIComponent(next)}`);
+  }
+
+  const website = await getWebsiteEditorContent();
+  const hero = website.hero;
+
   return (
     <MarketingShell>
       <main>
         <section className="mx-auto grid max-w-7xl items-center gap-10 px-6 pb-16 pt-12 lg:grid-cols-[1.02fr_.98fr] lg:pb-24 lg:pt-20">
           <div>
-            <Badge tone="blue">Lead intelligence, not spam automation</Badge>
+            <Badge tone="blue">{hero.subheadline || website.branding.slogan}</Badge>
             <h1 className="mt-6 max-w-4xl text-5xl font-semibold tracking-tight text-slate-950 md:text-7xl dark:text-white">
-              Find high-intent leads inside communities.
+              {hero.headline}
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600 dark:text-slate-300">
-              Community Lead Assistant helps freelancers, agencies, founders, and growth teams scan visible community posts, score buyer intent,
-              generate reviewed outreach drafts, and manage follow-ups from one polished dashboard.
+              {hero.description}
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/signup"><Button>Start 7-day trial</Button></Link>
-              <Link href="/download-extension"><Button variant="secondary">Download extension</Button></Link>
+              <Link href={hero.primaryCtaHref || "/signup"}><Button>{hero.primaryCtaLabel || "Start 7-day trial"}</Button></Link>
+              <Link href={hero.secondaryCtaHref || "/download-extension"}><Button variant="secondary">{hero.secondaryCtaLabel || "Download extension"}</Button></Link>
             </div>
             <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">Includes 50 saved leads and 50 Gemini draft credits during trial.</p>
             <div className="mt-8 grid gap-3 text-sm text-slate-600 sm:grid-cols-3 dark:text-slate-300">
-              {homepageSections.trustSignals.slice(0, 3).map(item => (
+              {(hero.trustBadges.length ? hero.trustBadges : homepageSections.trustSignals).slice(0, 3).map(item => (
                 <div key={item} className="flex items-center gap-2">
                   <CheckCircle2 size={16} className="text-emerald-600" />
                   {item}
@@ -108,11 +139,9 @@ export default function LandingPage() {
 
         <section className="border-y border-slate-200 bg-white/70 py-6 dark:border-white/10 dark:bg-white/5">
           <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-8 gap-y-3 px-6 text-sm font-medium text-slate-500 dark:text-slate-300">
-            <span>Built for freelancers</span>
-            <span>Small agencies</span>
-            <span>Founder-led teams</span>
-            <span>Growth consultants</span>
-            <span>SDR teams</span>
+            {(hero.clientLogos.length ? hero.clientLogos : ["Built for freelancers", "Small agencies", "Founder-led teams", "Growth consultants", "SDR teams"]).map(item => (
+              <span key={item}>{item}</span>
+            ))}
           </div>
         </section>
 

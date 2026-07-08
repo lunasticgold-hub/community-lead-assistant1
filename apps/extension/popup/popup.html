@@ -72,6 +72,20 @@
           <button id="scanVisibleBtn" class="secondary">Scan Visible</button>
           <button id="stopBtn" class="danger">Stop</button>
         </div>
+        <details class="scan-settings">
+          <summary>Scan settings <span>info</span></summary>
+          <label class="range-row">
+            <span>Per-post reading time</span>
+            <b id="delayValue">10s</b>
+          </label>
+          <input id="scanDelay" type="range" min="10" max="30" step="1">
+          <label class="check-row">
+            <input id="keywordGateEnabled" type="checkbox">
+            <span>Only qualify posts containing my keywords</span>
+          </label>
+          <textarea id="keywordGateTerms" rows="3" placeholder="Type keywords separated by commas or new lines, e.g. Shopify, SEO, appointment setter"></textarea>
+          <p class="hint"><b>Review Leads</b> saves qualified leads and drafts. <b>Scan Only</b> saves matches without outreach buttons. <b>Keyword-only</b> ignores posts unless they contain your typed keywords.</p>
+        </details>
       </section>
 
       <section class="progress-card">
@@ -86,9 +100,6 @@
           <div><b id="hotLeads">0</b><span>hot</span></div>
           <div><b id="savedToday">0</b><span>saved</span></div>
           <div><b id="reviewQueueCount">0</b><span>reviews</span></div>
-        </div>
-        <div class="mini-chart" aria-hidden="true">
-          <i style="height:35%"></i><i style="height:62%"></i><i style="height:48%"></i><i style="height:76%"></i><i style="height:54%"></i><i style="height:88%"></i>
         </div>
       </section>
 
